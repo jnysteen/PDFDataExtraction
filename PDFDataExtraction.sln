@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction", "PDFDataExtraction\PDFDataExtraction.csproj", "{38C9277A-527E-42DC-A590-CA4B92AD96AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.ConsoleApplication", "PDFDataExtraction.ConsoleApplication\PDFDataExtraction.ConsoleApplication.csproj", "{702850F3-1220-4679-AD52-8CD4E713A5A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
