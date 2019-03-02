@@ -1,8 +1,7 @@
-using System;
-using System.Xml.Serialization;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
-namespace PDFDataExtraction
+namespace PDFDataExtraction.Models
 {
 	[XmlRoot(ElementName="meta", Namespace="http://www.w3.org/1999/xhtml")]
 	public class Meta {

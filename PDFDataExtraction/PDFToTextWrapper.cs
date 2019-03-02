@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using PDFDataExtraction.Models;
+
 // ReSharper disable StringLiteralTypo
 
 namespace PDFDataExtraction
@@ -34,6 +36,10 @@ namespace PDFDataExtraction
             process.Start();
             string result = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
+            
+            if(process.ExitCode != 0)
+                throw new PDFToTextException();
+            
             return result;
         }
     }
