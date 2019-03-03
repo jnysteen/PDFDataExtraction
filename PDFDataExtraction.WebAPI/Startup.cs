@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDFToText;
 
 namespace PDFDataExtraction.WebAPI
@@ -27,10 +29,20 @@ namespace PDFDataExtraction.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(config =>
+            {
+                config.RespectBrowserAcceptHeader = true;
+                config.ReturnHttpNotAcceptable = true;
+                
+                config.InputFormatters.Add(new XmlSerializerInputFormatter());
+                config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             
             var pdfToTextWrapper = new PDFToTextWrapper();
             services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
+            services.AddSingleton<IPDFTextExtractor>(pdfToTextWrapper);
+            
+            
 
             // Configure the web API to be able to receive as large files as possible
             services.Configure<FormOptions>(x =>

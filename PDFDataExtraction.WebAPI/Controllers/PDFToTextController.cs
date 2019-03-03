@@ -1,13 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using PDFDataExtraction.Exceptions;
-using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.PDFToText.Models;
 using PDFDataExtraction.WebAPI.Models;
@@ -16,13 +14,13 @@ namespace PDFDataExtraction.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PDFTextExtractionController : ControllerBase
+    public class PDFToTextController : ControllerBase
     {
-        private readonly IPDFTextExtractor _pdfTextExtractor;
+        private readonly IPDFToTextWrapper _pdfToTextWrapper;
 
-        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor)
+        public PDFToTextController(IPDFToTextWrapper pdfToTextWrapper)
         {
-            _pdfTextExtractor = pdfTextExtractor;
+            _pdfToTextWrapper = pdfToTextWrapper;
         }
         
         [HttpGet]
@@ -31,16 +29,16 @@ namespace PDFDataExtraction.WebAPI.Controllers
             return new OkObjectResult("Test");
         }
         
-        [HttpPost("detailed")]
-        public async Task<IActionResult> DetailedExtraction([FromForm] IFormFile file)
+        [HttpPost("simple")]
+        public async Task<IActionResult> SimpleExtraction([FromForm] IFormFile file)
         {
             // TODO Check if actually a PDF file
 
             var pdfToTextArgs = new PDFToTextArgs();
 
-            var result = new PDFTextExtractionResult();
+            var result = new PDFToTextResult();
             
-            Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+            Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
             try
             {
@@ -54,29 +52,36 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 return new BadRequestObjectResult(result);
             }
         }
-                
-        [HttpPost("simple")]
-        public async Task<IActionResult> SimpleExtraction([FromForm] IFormFile file)
+        
+        [HttpPost("detailed")]
+        public async Task<IActionResult> DetailedExtraction([FromForm] IFormFile file)
         {
             // TODO Check if actually a PDF file
 
-            var pdfToTextArgs = new PDFToTextArgs();
+            var pdfToTextArgs = new PDFToTextArgs()
+            {
+                OutputBoundingBox = true,
+                OutputBoundingBoxLayout = true
+            };
 
-            Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+            var result = new PDFToTextResult();
+            
+            Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
             try
             {
                 var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
-                var documentAsString = extractedText.GetAsString();
-                return new OkObjectResult(documentAsString);
+                result.ExtractedData = extractedText;
+                return new OkObjectResult(extractedText);
             }
             catch (Exception e)
             {
-                return new BadRequestObjectResult(e.Message);
+                result.ErrorMessage = e.Message;
+                return new BadRequestObjectResult(result);
             }
         }
-        
-        private static async Task<T> ExtractText<T>(IFormFile file, PDFToTextArgs pdfToTextArgs, Func<string, Task<T>> extractor)
+
+        private static async Task<T> ExtractText<T>(IFormFile file, PDFToTextArgs pdfToTextArgs, Func<string, PDFToTextArgs, Task<T>> extractor)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilePath = $"./uploaded-files/{fileId}.pdf";
@@ -87,7 +92,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
                     await file.CopyToAsync(fileStream);
 
-                var result = await extractor(inputFilePath);
+                var result = await extractor(inputFilePath, pdfToTextArgs);
                 return result;
             }
             finally

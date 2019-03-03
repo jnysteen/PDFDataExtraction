@@ -1,6 +1,6 @@
 namespace PDFDataExtraction.WebAPI.Models
 {
-    public class DetailedPDFTextExtractionResult
+    public class PDFToTextResult
     {
         public string ErrorMessage { get; set; }
         public bool IsSuccessful => ErrorMessage == null;
