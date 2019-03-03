@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using PDFDataExtraction.Models;
+using PDFDataExtraction.Models.PDFToTextDocumentBoundingBoxLayout;
 
 namespace PDFDataExtraction.ConsoleApplication
 {
@@ -15,8 +16,6 @@ namespace PDFDataExtraction.ConsoleApplication
             var pdfToTextService = new PDFToTextWrapper();
 
             Console.WriteLine($"Extracting text from PDF...");
-
-            var inputFileWithoutExtension = Path.GetFileNameWithoutExtension(inputFile);
 
             var pdfToTextArgs = new PDFToTextArgs()
             {

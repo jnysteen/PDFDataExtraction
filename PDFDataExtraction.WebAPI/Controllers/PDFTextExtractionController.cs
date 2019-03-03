@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Models;
+using PDFDataExtraction.WebAPI.Models;
 
 namespace PDFDataExtraction.WebAPI.Controllers
 {
@@ -22,42 +23,75 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
         
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public IActionResult Get()
         {
-            return new string[] {"value1", "value2"};
+            return new OkObjectResult("Test");
         }
         
-        [HttpPost]
-        public async Task<IActionResult> Post([FromForm] IFormFile file)
+        [HttpPost("simple")]
+        public async Task<IActionResult> SimpleExtraction([FromForm] IFormFile file)
         {
             // TODO Check if actually a PDF file
-            
-            // Save file to disk
-            var fileId = Guid.NewGuid().ToString();
-            var inputFilePath = $"./uploaded-files/{fileId}.pdf";
 
-            using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
-                await file.CopyToAsync(fileStream);
-            
-            var result = new PDFTextExtractionResult();
+            var pdfToTextArgs = new PDFToTextArgs();
 
-            var extractionArgs = new PDFToTextArgs()
-            {
-                OutputBoundingBoxLayout = true
-            };
+            var result = new SimplePDFTextExtractionResult();
             
-            // Process file
+            Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
+            
             try
             {
-                var pdfToTextResult = await _pdfToTextWrapper.ExtractTextFromPDF(inputFilePath, extractionArgs);
-                result.ExtractedData = pdfToTextResult;
-
-                return new OkObjectResult(pdfToTextResult);
+                var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
+                result.ExtractedData = extractedText;
+                return new OkObjectResult(extractedText);
             }
             catch (Exception e)
             {
                 result.ErrorMessage = e.Message;
                 return new BadRequestObjectResult(result);
+            }
+        }
+        
+        [HttpPost("detailed")]
+        public async Task<IActionResult> DetailedExtraction([FromForm] IFormFile file)
+        {
+            // TODO Check if actually a PDF file
+
+            var pdfToTextArgs = new PDFToTextArgs()
+            {
+                OutputBoundingBox = true
+            };
+
+            var result = new SimplePDFTextExtractionResult();
+            
+            Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
+            
+            try
+            {
+                var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
+                result.ExtractedData = extractedText;
+                return new OkObjectResult(extractedText);
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.Message;
+                return new BadRequestObjectResult(result);
+            }
+        }
+
+        private async Task<T> ExtractText<T>(IFormFile file, PDFToTextArgs pdfToTextArgs, Func<string, PDFToTextArgs, Task<T>> extractor)
+        {                
+            var fileId = Guid.NewGuid().ToString();
+            var inputFilePath = $"./uploaded-files/{fileId}.pdf";
+
+            try
+            {
+                // Save file to disk
+                using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
+                    await file.CopyToAsync(fileStream);
+
+                var result = await extractor(inputFilePath, pdfToTextArgs);
+                return result;
             }
             finally
             {
@@ -65,8 +99,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 {
                     System.IO.File.Delete(inputFilePath);
                 }
-                catch (IOException e)
+                catch (IOException)
                 {
+                    
                 }
             }
         }
