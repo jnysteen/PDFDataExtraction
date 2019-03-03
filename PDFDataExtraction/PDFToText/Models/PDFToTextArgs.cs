@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 
 // ReSharper disable StringLiteralTypo
 
-namespace PDFDataExtraction.Models
+namespace PDFDataExtraction.PDFToText.Models
 {
     public class PDFToTextArgs
     {

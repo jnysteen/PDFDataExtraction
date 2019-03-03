@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace PDFDataExtraction.Models.PDFToTextDocumentBoundingBoxLayout
+namespace PDFDataExtraction.PDFToText.Models.PDFToTextDocumentBoundingBoxLayout
 {
-    [XmlRoot(ElementName="block", Namespace="http://www.w3.org/1999/xhtml")]
-    public class Block {
-        [XmlElement(ElementName="line", Namespace="http://www.w3.org/1999/xhtml")]
-        public List<Line> Lines { get; set; }
+    [XmlRoot(ElementName="word", Namespace="http://www.w3.org/1999/xhtml")]
+    public class Word {
         [XmlAttribute(AttributeName="xMin")]
         public double XMin { get; set; }
         [XmlAttribute(AttributeName="yMin")]
@@ -15,5 +12,7 @@ namespace PDFDataExtraction.Models.PDFToTextDocumentBoundingBoxLayout
         public double XMax { get; set; }
         [XmlAttribute(AttributeName="yMax")]
         public double YMax { get; set; }
+        [XmlText]
+        public string Text { get; set; }
     }
 }

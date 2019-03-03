@@ -1,5 +1,5 @@
 using System;
-using PDFDataExtraction.Models;
+using PDFDataExtraction.PDFToText.Models;
 using Xunit;
 
 namespace PDFDataExtraction.Tests

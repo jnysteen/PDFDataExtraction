@@ -1,6 +1,6 @@
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
-namespace PDFDataExtraction.Models.PDFToTextDocumentBoundingBoxLayout
+namespace PDFDataExtraction.PDFToText.Models.PDFToTextDocumentBoundingBox
 {
 	[XmlRoot(ElementName="meta", Namespace="http://www.w3.org/1999/xhtml")]
 	public class Meta {

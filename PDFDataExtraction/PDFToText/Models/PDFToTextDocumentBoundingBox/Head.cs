@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace PDFDataExtraction.Models.PDFToTextDocumentBoundingBox
+namespace PDFDataExtraction.PDFToText.Models.PDFToTextDocumentBoundingBox
 {
     [XmlRoot(ElementName="head", Namespace="http://www.w3.org/1999/xhtml")]
     public class Head {

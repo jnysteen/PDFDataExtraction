@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using PDFDataExtraction.Models;
+using PDFDataExtraction.PDFToText.Models;
 
-namespace PDFDataExtraction
+namespace PDFDataExtraction.PDFToText
 {
     public interface IPDFToTextWrapper
     {

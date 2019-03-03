@@ -2,8 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using PDFDataExtraction.Models;
-using PDFDataExtraction.Models.PDFToTextDocumentBoundingBoxLayout;
+using PDFDataExtraction.PDFToText;
+using PDFDataExtraction.PDFToText.Models;
+using PDFDataExtraction.PDFToText.Models.PDFToTextDocumentBoundingBoxLayout;
 
 namespace PDFDataExtraction.ConsoleApplication
 {

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PDFDataExtraction.Exceptions;
-using PDFDataExtraction.Models;
+using PDFDataExtraction.PDFToText;
+using PDFDataExtraction.PDFToText.Models;
 using PDFDataExtraction.WebAPI.Models;
 
 namespace PDFDataExtraction.WebAPI.Controllers
@@ -79,7 +80,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
 
-        private async Task<T> ExtractText<T>(IFormFile file, PDFToTextArgs pdfToTextArgs, Func<string, PDFToTextArgs, Task<T>> extractor)
+        private static async Task<T> ExtractText<T>(IFormFile file, PDFToTextArgs pdfToTextArgs, Func<string, PDFToTextArgs, Task<T>> extractor)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilePath = $"./uploaded-files/{fileId}.pdf";

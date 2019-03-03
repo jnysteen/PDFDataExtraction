@@ -1,15 +1,13 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using PDFDataExtraction.Exceptions;
-using PDFDataExtraction.Models;
+using PDFDataExtraction.PDFToText.Models;
 
 // ReSharper disable StringLiteralTypo
 
-namespace PDFDataExtraction
+namespace PDFDataExtraction.PDFToText
 {
     public class PDFToTextWrapper : IPDFToTextWrapper
     {
