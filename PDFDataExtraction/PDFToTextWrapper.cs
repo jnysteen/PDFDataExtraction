@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Models;
 
 // ReSharper disable StringLiteralTypo
 
 namespace PDFDataExtraction
 {
-    public class PDFToTextWrapper
+    public class PDFToTextWrapper : IPDFToTextWrapper
     {
-        private string _workingDirectory;
-
-        public PDFToTextWrapper(string workingDirectory)
+        public async Task<string> ExtractTextFromPDF(string inputFilePath, PDFToTextArgs pdfToTextArgs)
         {
-            _workingDirectory = workingDirectory;
-        }
+            var otherArgsAsString = pdfToTextArgs.GetArgsAsString();
 
-        public string PDFToText(string inputFilePath, string outputFilePath, string[] otherArgs)
-        {
-            var otherArgsAsString = string.Join(" ", otherArgs);
+            var outputFilePath = "-"; // If the output file is "-", the output is redirected to stdout
 
             var cmd = $"pdftotext {otherArgsAsString} {inputFilePath} {outputFilePath}";
             var escapedArgs = cmd.Replace("\"", "\\\"");
@@ -33,14 +31,20 @@ namespace PDFDataExtraction
                     CreateNoWindow = true,
                 }
             };
+            
             process.Start();
-            string result = process.StandardOutput.ReadToEnd();
+            var pdfToTextOutput = await process.StandardOutput.ReadToEndAsync();
             process.WaitForExit();
-            
-            if(process.ExitCode != 0)
-                throw new PDFToTextException();
-            
-            return result;
+
+            if (process.ExitCode != 0)
+                throw new PDFToTextException($"pdftotext exited with status code: {process.ExitCode}");
+
+            return pdfToTextOutput;
         }
+    }
+
+    public interface IPDFToTextWrapper
+    {
+        Task<string> ExtractTextFromPDF(string inputFilePath, PDFToTextArgs pdfToTextArgs);
     }
 }

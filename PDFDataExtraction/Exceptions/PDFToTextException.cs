@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace PDFDataExtraction.Models
+namespace PDFDataExtraction.Exceptions
 {
     public class PDFToTextException : Exception
     {
