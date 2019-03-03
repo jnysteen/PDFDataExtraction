@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.ConsoleAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.Tests", "PDFDataExtraction.Tests\PDFDataExtraction.Tests.csproj", "{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.WebAPI", "PDFDataExtraction.WebAPI\PDFDataExtraction.WebAPI.csproj", "{64F6418F-0177-4506-BE0C-1A978D398054}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64F6418F-0177-4506-BE0C-1A978D398054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64F6418F-0177-4506-BE0C-1A978D398054}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64F6418F-0177-4506-BE0C-1A978D398054}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64F6418F-0177-4506-BE0C-1A978D398054}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
