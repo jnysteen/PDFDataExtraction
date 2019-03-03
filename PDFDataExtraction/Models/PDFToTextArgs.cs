@@ -1,11 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+
 // ReSharper disable StringLiteralTypo
 
 namespace PDFDataExtraction.Models
 {
     public class PDFToTextArgs
     {
+        private static (Func<PDFToTextArgs, object>, string)[] _argsProperties;
+        private static (Func<PDFToTextArgs, object>, string)[] ArgsProperties => _argsProperties ?? (_argsProperties = GetArgsProperties());
+        
+        
         # region Args with values
         
         /// <summary>
@@ -94,9 +104,58 @@ namespace PDFDataExtraction.Models
 
         #endregion
         
-        public string GetArgsAsString()
+        internal string GetArgsAsString()
         {
-            throw new NotImplementedException();
+            var stringBuilder = new StringBuilder();
+            
+            foreach (var argsProperty in ArgsProperties)
+            {
+                var (propertyValueGetter, displayName) = argsProperty;
+                
+                var propertyValue = propertyValueGetter(this);
+
+                switch (propertyValue)
+                {
+                    case null:
+                        continue;
+                    case bool propertyValueBool:
+                    {
+                        if (propertyValueBool)
+                        {
+                            stringBuilder.Append($" -{displayName}");
+                        }
+
+                        break;
+                    }
+                    default:
+                        stringBuilder.Append($" -{displayName} {propertyValue}");
+                        break;
+                }
+            }
+
+            return stringBuilder.ToString().Trim();
+        }
+
+        private static (Func<PDFToTextArgs, object>, string)[] GetArgsProperties()
+        {
+            var properties = typeof(PDFToTextArgs).GetProperties();
+
+            var argsProperties = new List<(Func<PDFToTextArgs, object>, string)>();
+
+            foreach (var propertyInfo in properties)
+            {
+                var attribute = Attribute.GetCustomAttribute(propertyInfo, typeof(DisplayNameAttribute));
+
+                if (!(attribute is DisplayNameAttribute displayNameAttribute)) 
+                    continue;
+                
+                Func<PDFToTextArgs, object> propertyValueGetter = propertyInfo.GetValue;
+                var displayName = displayNameAttribute.DisplayName;
+                
+                argsProperties.Add((propertyValueGetter, displayName));
+            }
+
+            return argsProperties.ToArray();
         }
         
     }
