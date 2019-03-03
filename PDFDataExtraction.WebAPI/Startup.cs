@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +30,13 @@ namespace PDFDataExtraction.WebAPI
             
             var pdfToTextWrapper = new PDFToTextWrapper();
             services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
+
+            // Configure the web API to be able to receive as large files as possible
+            services.Configure<FormOptions>(x =>
+            {
+                x.ValueLengthLimit = int.MaxValue;
+                x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

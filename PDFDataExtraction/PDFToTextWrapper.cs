@@ -17,15 +17,30 @@ namespace PDFDataExtraction
 
             var outputFilePath = "-"; // If the output file is "-", the output is redirected to stdout
 
-            var cmd = $"pdftotext {otherArgsAsString} {inputFilePath} {outputFilePath}";
+//            var cmd = $"pdftotext {otherArgsAsString} {inputFilePath} {outputFilePath}";
+//            var escapedArgs = cmd.Replace("\"", "\\\"");
+//
+//            var process = new Process()
+//            {
+//                StartInfo = new ProcessStartInfo
+//                {
+//                    FileName = "/bin/bash",
+//                    Arguments = $"-c \"{escapedArgs}\"",
+//                    RedirectStandardOutput = true,
+//                    UseShellExecute = false,
+//                    CreateNoWindow = true,
+//                }
+//            };
+            
+            var cmd = $" {otherArgsAsString} {inputFilePath} {outputFilePath}";
             var escapedArgs = cmd.Replace("\"", "\\\"");
 
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"{escapedArgs}\"",
+                    FileName = "pdftotext",
+                    Arguments = escapedArgs,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,

@@ -14,8 +14,9 @@ COPY PDFDataExtraction/. ./PDFDataExtraction/
 WORKDIR /app/PDFDataExtraction.WebAPI
 RUN dotnet publish -c Release -o out
 
-
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.1-alpine AS runtime
+# Install pdftotext
+RUN apk add --no-cache poppler-utils 
 WORKDIR /app
 COPY --from=build /app/PDFDataExtraction.WebAPI/out ./
 ENTRYPOINT ["dotnet", "PDFDataExtraction.WebAPI.dll"]
