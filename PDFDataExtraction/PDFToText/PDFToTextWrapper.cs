@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PDFToText.Models;
 
 // ReSharper disable StringLiteralTypo
@@ -21,29 +23,15 @@ namespace PDFDataExtraction.PDFToText
 
             var outputFilePath = "-"; // If the output file is "-", the output is redirected to stdout
 
-            var cmd = $" {otherArgsAsString} {inputFilePath} {outputFilePath}";
-            var escapedArgs = cmd.Replace("\"", "\\\"");
+            var applicationName = "pdftotext";
+            var args = $"{otherArgsAsString} {inputFilePath} {outputFilePath}";
 
-            var process = new Process()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "pdftotext",
-                    Arguments = escapedArgs,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
+            var (statusCode, stdOutput) = await CmdLineHelper.Run(applicationName, args);
+            
+            if (statusCode != 0)
+                throw new PDFTextExtractionException($"pdftotext exited with status code: {statusCode}");
 
-            process.Start();
-            var pdfToTextOutput = await process.StandardOutput.ReadToEndAsync();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-                throw new PDFToTextException($"pdftotext exited with status code: {process.ExitCode}");
-
-            return pdfToTextOutput;
+            return stdOutput;
         }
 
         public async Task<Models.PDFToTextDocumentBoundingBoxLayout.Html> ExtractTextFromPDFBoundingBoxLayout(
@@ -114,44 +102,57 @@ namespace PDFDataExtraction.PDFToText
 
         private static Line[] ConstructLinesFromWords(List<Models.PDFToTextDocumentBoundingBox.Word> words)
         {
-            var constructedLines = new List<Line>();
+            Func<Word, Word, bool> lineGroupingCondition =
+                (thisWord, thatWord) => Math.Abs(thisWord.YMax - thatWord.YMax) < 0.1;
+                
+            Func<IEnumerable<Word>, Line> lineCreator = wordsInLine => new Line() {Words = wordsInLine.ToArray()}; 
 
-            var wordsInReadingOrder = words.OrderBy(w => w.YMin).ThenBy(w => w.XMin);
-
-            var wordsToBePutInLines = new Queue<Models.PDFToTextDocumentBoundingBox.Word>();
-            foreach (var word in wordsInReadingOrder)
-                wordsToBePutInLines.Enqueue(word);
-
-            var lineUnderConstruction = new Stack<Word>();
-
-            while (wordsToBePutInLines.Any())
-            {
-                var rawWordToBeExamined = wordsToBePutInLines.Dequeue();
-                var wordToBeExamined = MapFromWord(rawWordToBeExamined);
-
-                if (!lineUnderConstruction.Any())
-                {
-                    lineUnderConstruction.Push(wordToBeExamined);
-                    continue;
-                }
-
-                var latestAddedWord = lineUnderConstruction.Peek();
-
-                if (Math.Abs(wordToBeExamined.YMax - latestAddedWord.YMax) < 0.1)
-                {
-                    lineUnderConstruction.Push(wordToBeExamined);
-                    continue;
-                }
-
-                constructedLines.Add(MapFromWordStack(lineUnderConstruction));
-                lineUnderConstruction.Clear();
-                lineUnderConstruction.Push(wordToBeExamined);
-            }
-
-            if (lineUnderConstruction.Any())
-                constructedLines.Add(MapFromWordStack(lineUnderConstruction));
+            var mappedWords = words.Select(MapFromWord);
+            var wordsInReadingOrder = mappedWords.OrderBy(w => w.YMin).ThenBy(w => w.XMin).ToList();
+            
+            var constructedLines = Grouper.GroupByCondition(mappedWords, lineGroupingCondition, lineCreator);
 
             return constructedLines.ToArray();
+        }
+
+        private static Character[] FakeCharactersFromString(Models.PDFToTextDocumentBoundingBox.Word oldWord)
+        {
+            var charsInWord = oldWord.Text.ToCharArray();
+            var oldWordWidth = oldWord.XMax - oldWord.XMin;
+            
+            var widthPerCharacter = oldWordWidth / charsInWord.Length;
+
+            var nextCharStartX = oldWord.XMin;
+
+            var characters = new Character[charsInWord.Length];
+            
+            for (int i = 0; i < charsInWord.Length; i++)
+            {
+                var charInWord = charsInWord[i];
+
+                var character = new Character()
+                {
+                    Text = charInWord.ToString(),
+                    BoundingBox = new BoundingBox()
+                    {
+                        TopLeftCorner = new Point()
+                        {
+                            X = nextCharStartX,
+                            Y = oldWord.YMin
+                        },
+                        BottomRightCorner = new Point()
+                        {
+                            X = nextCharStartX + widthPerCharacter,
+                            Y = oldWord.YMax
+                        }
+                    }
+                };
+
+                nextCharStartX += widthPerCharacter;
+                characters[i] = character;
+            }
+
+            return characters;
         }
 
         private static Word MapFromWord(Models.PDFToTextDocumentBoundingBox.Word oldWord)
@@ -162,7 +163,7 @@ namespace PDFDataExtraction.PDFToText
                 XMax = oldWord.XMax,
                 YMin = oldWord.YMin,
                 YMax = oldWord.YMax,
-                Text = oldWord.Text
+                Characters = FakeCharactersFromString(oldWord)
             };
         }
 

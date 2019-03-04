@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +20,13 @@ namespace PDFDataExtraction.WebAPI
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+//                .UseKestrel(options =>
+//                {
+//                    options.Limits.MinRequestBodyDataRate =
+//                        new MinDataRate(bytesPerSecond: 80, gracePeriod: TimeSpan.FromSeconds(20));
+//                    options.Limits.MinResponseDataRate =
+//                        new MinDataRate(bytesPerSecond: 80, gracePeriod: TimeSpan.FromSeconds(20));
+//                })
                 .UseStartup<Startup>();
     }
 }

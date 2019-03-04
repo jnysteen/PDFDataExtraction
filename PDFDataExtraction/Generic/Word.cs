@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace PDFDataExtraction.Generic
 {
     public class Word
@@ -8,6 +10,8 @@ namespace PDFDataExtraction.Generic
         public double YMin { get; set; }
         public double YMax { get; set; }
         
-        public string Text { get; set; }
+        public Character[] Characters { get; set; }
+
+        public string Text => string.Join("", Characters.Select(c => c.Text));
     }
 }

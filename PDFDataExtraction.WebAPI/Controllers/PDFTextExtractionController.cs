@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.PDF2Text;
 using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.PDFToText.Models;
 using PDFDataExtraction.WebAPI.Models;
@@ -18,9 +19,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
     [ApiController]
     public class PDFTextExtractionController : ControllerBase
     {
-        private readonly IPDFTextExtractor _pdfTextExtractor;
+        private readonly IPDF2TextWrapper _pdfTextExtractor;
 
-        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor)
+        public PDFTextExtractionController(IPDF2TextWrapper pdfTextExtractor)
         {
             _pdfTextExtractor = pdfTextExtractor;
         }
@@ -36,15 +37,13 @@ namespace PDFDataExtraction.WebAPI.Controllers
         {
             // TODO Check if actually a PDF file
 
-            var pdfToTextArgs = new PDFToTextArgs();
-
             var result = new PDFTextExtractionResult();
             
             Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
             
             try
             {
-                var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
+                var extractedText = await ExtractText(file, extractor);
                 result.ExtractedData = extractedText;
                 return new OkObjectResult(extractedText);
             }
@@ -66,7 +65,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             
             try
             {
-                var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
+                var extractedText = await ExtractText(file, extractor);
                 var documentAsString = extractedText.GetAsString();
                 return new OkObjectResult(documentAsString);
             }
@@ -76,7 +75,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
         
-        private static async Task<T> ExtractText<T>(IFormFile file, PDFToTextArgs pdfToTextArgs, Func<string, Task<T>> extractor)
+        private static async Task<T> ExtractText<T>(IFormFile file, Func<string, Task<T>> extractor)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilePath = $"./uploaded-files/{fileId}.pdf";

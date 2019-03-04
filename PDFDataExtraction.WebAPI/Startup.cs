@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.PDF2Text;
 using PDFDataExtraction.PDFToText;
 
 namespace PDFDataExtraction.WebAPI
@@ -41,7 +42,9 @@ namespace PDFDataExtraction.WebAPI
             var pdfToTextWrapper = new PDFToTextWrapper();
             services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
             services.AddSingleton<IPDFTextExtractor>(pdfToTextWrapper);
-            
+
+            var pdf2TextWrapper = new PDF2TextWrapper(); 
+            services.AddSingleton<IPDF2TextWrapper>(pdf2TextWrapper);
             
 
             // Configure the web API to be able to receive as large files as possible
