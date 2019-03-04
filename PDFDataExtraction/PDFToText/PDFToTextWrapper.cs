@@ -103,12 +103,12 @@ namespace PDFDataExtraction.PDFToText
         private static Line[] ConstructLinesFromWords(List<Models.PDFToTextDocumentBoundingBox.Word> words)
         {
             Func<Word, Word, bool> lineGroupingCondition =
-                (thisWord, thatWord) => Math.Abs(thisWord.YMax - thatWord.YMax) < 0.1;
+                (thisWord, thatWord) => Math.Abs(thisWord.BoundingBox.MaxY - thatWord.BoundingBox.MaxY) < 0.1;
                 
             Func<IEnumerable<Word>, Line> lineCreator = wordsInLine => new Line() {Words = wordsInLine.ToArray()}; 
 
             var mappedWords = words.Select(MapFromWord);
-            var wordsInReadingOrder = mappedWords.OrderBy(w => w.YMin).ThenBy(w => w.XMin).ToList();
+            var wordsInReadingOrder = mappedWords.OrderBy(w => w.BoundingBox.MinY).ThenBy(w => w.BoundingBox.MinX).ToList();
             
             var constructedLines = Grouper.GroupByCondition(mappedWords, lineGroupingCondition, lineCreator);
 
@@ -159,10 +159,19 @@ namespace PDFDataExtraction.PDFToText
         {
             return new Word()
             {
-                XMin = oldWord.XMin,
-                XMax = oldWord.XMax,
-                YMin = oldWord.YMin,
-                YMax = oldWord.YMax,
+                BoundingBox = new BoundingBox()
+                {
+                    TopLeftCorner = new Point()
+                    {
+                        X = oldWord.XMin,
+                        Y = oldWord.YMin
+                    },
+                    BottomRightCorner = new Point()
+                    {
+                        X = oldWord.XMax,
+                        Y = oldWord.YMax
+                    }
+                },
                 Characters = FakeCharactersFromString(oldWord)
             };
         }

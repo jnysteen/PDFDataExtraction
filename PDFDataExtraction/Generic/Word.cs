@@ -4,11 +4,7 @@ namespace PDFDataExtraction.Generic
 {
     public class Word
     {
-        public double XMin { get; set; }
-        public double XMax { get; set; }
-        
-        public double YMin { get; set; }
-        public double YMax { get; set; }
+        public BoundingBox BoundingBox { get; set; } 
         
         public Character[] Characters { get; set; }
 

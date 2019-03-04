@@ -12,7 +12,7 @@ using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PDF2Text.Models;
 using PDFDataExtraction.PDFToText.Models;
 using Line = PDFDataExtraction.Generic.Line;
-using Page = PDFDataExtraction.PDF2Text.Models.Page;
+using Page = PDFDataExtraction.Generic.Page;
 
 namespace PDFDataExtraction.PDF2Text
 {
@@ -57,51 +57,37 @@ namespace PDFDataExtraction.PDF2Text
             // TODO The width of a whitespace depends on the font size - this does not take that fact into account.
             var whitespaceSize = GetBoundingBoxFromString(characterOfMeanSize.Bbox).Width * 0.3;            
 
-            
-            
-            Func<TextNode, TextNode, bool> wordGroupingCondition =
-                (thisWord, thatWordAfterThisWord) =>
-                {
-                    var thisBoundingBox = GetBoundingBoxFromString(thisWord.Bbox);
-                    var thatBoundingBox = GetBoundingBoxFromString(thatWordAfterThisWord.Bbox);
-
-                    return Math.Abs(thatBoundingBox.TopLeftCorner.X - thisBoundingBox.BottomRightCorner.X) <=
-                           whitespaceSize;
-                };
-
-            Func<IEnumerable<TextNode>, Word> wordCreator = GetWordFromTextNodes;
+            Func<IEnumerable<Character>, Word> wordCreator = GetWordFromCharacters;
 
             foreach (var page in pages.Page)
             {
                 var pageBoundingBox = GetBoundingBoxFromString(page.Bbox);
-
-                var lines = new List<Line>();
+                
+                var outputPage = new Generic.Page()
+                {
+                    Width = pageBoundingBox.Width,
+                    Height = pageBoundingBox.Height,
+                };
+                
+                var allWordsOnPage = new List<Word>();
 
                 foreach (var textBox in page.Textbox)
                 {
                     foreach (var textline in textBox.Textlines)
                     {
                         var nonEmptyTextParts = textline.TextParts.Where(t => !string.IsNullOrEmpty(t.Text));
+                        var textPartsAsCharacters = nonEmptyTextParts.Select(t => GetCharacterFromTextNode(t, outputPage));
                         
-                        var wordsInLine =
-                            Grouper.GroupByCondition(nonEmptyTextParts, wordGroupingCondition, wordCreator);
+                        var wordsInLine = Grouper.GroupByCondition(textPartsAsCharacters, (thisCharacter, theCharacterAfterThisCharacter) => CharactersToWordGroupingCondition(thisCharacter, theCharacterAfterThisCharacter, whitespaceSize), wordCreator);
 
-                        var line = new Line()
-                        {
-                            Words = wordsInLine.ToArray()
-                        };
-
-                        lines.Add(line);
+                        allWordsOnPage.AddRange(wordsInLine);
                     }
                 }
 
+                var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
+                var createdLines = ConstructLinesFromWords(wordsInReadingOrder);
 
-                var outputPage = new Generic.Page()
-                {
-                    Width = pageBoundingBox.Width,
-                    Height = pageBoundingBox.Height,
-                    Lines = lines.ToArray()
-                };
+                outputPage.Lines = createdLines.ToArray();
 
                 outputPages.Add(outputPage);
             }
@@ -111,8 +97,34 @@ namespace PDFDataExtraction.PDF2Text
                 Pages = outputPages.ToArray()
             };
         }
+        
+        private static Line[] ConstructLinesFromWords(IEnumerable<Word> wordsInReadingOrder)
+        {
+            var maxPixelDifferenceInWordsInTheSameLine = 1;
+            var constructedLines = Grouper.GroupByCondition(wordsInReadingOrder, (thisWord, thatWord) => WordsToLinesGroupingCondition(thisWord, thatWord, maxPixelDifferenceInWordsInTheSameLine), WordsToLinesGroupCreator);
 
-        private static BoundingBox GetBoundingBoxFromString(string bbox)
+            return constructedLines.ToArray();
+        }
+
+        public static bool CharactersToWordGroupingCondition(Character thisCharacter, Character theCharacterAfterThisCharacter, double whitespaceSize)
+        {
+            return theCharacterAfterThisCharacter.BoundingBox.MinX - thisCharacter.BoundingBox.MaxX <=
+                   whitespaceSize;
+        }
+        
+        public static bool WordsToLinesGroupingCondition(Word thisWord, Word nextWord, double toleratedDifference)
+        {
+            return Math.Abs(thisWord.BoundingBox.MaxY - nextWord.BoundingBox.MaxY) < toleratedDifference;
+        }
+        
+        public static Line WordsToLinesGroupCreator(IEnumerable<Word> wordsInLine)
+        {
+            var wordsInNaturalReadingOrder = wordsInLine.OrderBy(w => w.BoundingBox.MinX);
+            return new Line() {Words = wordsInNaturalReadingOrder.ToArray()}; 
+        }
+
+        
+        private static BoundingBox GetBoundingBoxFromString(string bbox, double? pageHeight = null)
         {
             var splitOnComma = bbox.Split(',');
 
@@ -125,6 +137,17 @@ namespace PDFDataExtraction.PDF2Text
             var bottomRightX = double.Parse(splitOnComma[2]);
             var bottomRightY = double.Parse(splitOnComma[3]);
 
+            // Flip the Y-coordinates to get the points into the right coordinate system (where the Y-axis points downwards)
+            if (pageHeight.HasValue)
+            {
+                topLeftY = pageHeight.Value - topLeftY;
+                bottomRightY = pageHeight.Value - bottomRightY;
+
+                var temp = topLeftY;
+                topLeftY = bottomRightY;
+                bottomRightY = temp;
+            }
+            
             return new BoundingBox()
             {
                 TopLeftCorner = new Point() {X = topLeftX, Y = topLeftY},
@@ -132,18 +155,33 @@ namespace PDFDataExtraction.PDF2Text
             };
         }
 
-        private static Word GetWordFromTextNodes(IEnumerable<TextNode> textNodes)
+        private static Character GetCharacterFromTextNode(TextNode textNode, Page originatesFromPage)
         {
-            var characters = textNodes.Select(t => new Character()
+            return new Character()
             {
-                Font = t.Font,
-                Text = t.Text,
-                BoundingBox = GetBoundingBoxFromString(t.Bbox)
-            });
+                Font = textNode.Font,
+                Text = textNode.Text,
+                BoundingBox = GetBoundingBoxFromString(textNode.Bbox, originatesFromPage.Height)
+            };
+        }
+
+        private static Word GetWordFromCharacters(IEnumerable<Character> characters)
+        {
+            var enumeratedCharacters = characters.ToArray();
+            
+            var firstChar = enumeratedCharacters.First();
+            var lastChar = enumeratedCharacters.Last();
+
+            var wordBoundingBox = new BoundingBox()
+            {
+                TopLeftCorner = firstChar.BoundingBox.TopLeftCorner,
+                BottomRightCorner = lastChar.BoundingBox.BottomRightCorner
+            };
 
             return new Word()
             {
-                Characters = characters.ToArray()
+                Characters = enumeratedCharacters.ToArray(),
+                BoundingBox = wordBoundingBox
             };
         }
     }
