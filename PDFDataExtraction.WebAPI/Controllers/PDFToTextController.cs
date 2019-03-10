@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using JNysteen.FileTypeIdentifier.Interfaces;
+using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PDFDataExtraction.Exceptions;
@@ -17,10 +19,12 @@ namespace PDFDataExtraction.WebAPI.Controllers
     public class PDFToTextController : ControllerBase
     {
         private readonly IPDFToTextWrapper _pdfToTextWrapper;
+        private readonly IFileTypeIdentifier _fileTypeIdentifier;
 
-        public PDFToTextController(IPDFToTextWrapper pdfToTextWrapper)
+        public PDFToTextController(IPDFToTextWrapper pdfToTextWrapper, IFileTypeIdentifier fileTypeIdentifier)
         {
             _pdfToTextWrapper = pdfToTextWrapper;
+            _fileTypeIdentifier = fileTypeIdentifier;
         }
         
         [HttpGet]
@@ -32,12 +36,22 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [HttpPost("simple")]
         public async Task<IActionResult> SimpleExtraction([FromForm] IFormFile file)
         {
-            // TODO Check if actually a PDF file
+            var result = new PDFToTextResult();
+            
+            string fileType = null;
+            using(var fileStream = file.OpenReadStream())
+            {
+                fileType = _fileTypeIdentifier.GetFileType(fileStream);
+            }
+
+            if (fileType == null || fileType != DocumentMagicNumbers.PDF)
+            {
+                result.ErrorMessage = "The provided file was not a PDF!";
+                return new BadRequestObjectResult(result);
+            }
 
             var pdfToTextArgs = new PDFToTextArgs();
 
-            var result = new PDFToTextResult();
-            
             Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
             try
@@ -56,7 +70,19 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [HttpPost("detailed")]
         public async Task<IActionResult> DetailedExtraction([FromForm] IFormFile file)
         {
-            // TODO Check if actually a PDF file
+            var result = new PDFToTextResult();
+            
+            string fileType = null;
+            using(var fileStream = file.OpenReadStream())
+            {
+                fileType = _fileTypeIdentifier.GetFileType(fileStream);
+            }
+
+            if (fileType == null || fileType != DocumentMagicNumbers.PDF)
+            {
+                result.ErrorMessage = "The provided file was not a PDF!";
+                return new BadRequestObjectResult(result);
+            }
 
             var pdfToTextArgs = new PDFToTextArgs()
             {
@@ -64,7 +90,6 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 OutputBoundingBoxLayout = true
             };
 
-            var result = new PDFToTextResult();
             
             Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             

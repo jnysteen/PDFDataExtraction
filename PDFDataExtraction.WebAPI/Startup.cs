@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JNysteen.FileTypeIdentifier;
+using JNysteen.FileTypeIdentifier.Interfaces;
+using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -41,8 +44,12 @@ namespace PDFDataExtraction.WebAPI
             var pdfToTextWrapper = new PDFToTextWrapper();
             services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
             services.AddSingleton<IPDFTextExtractor>(pdfToTextWrapper);
+
+            var fileTypeMappingTable = new MagicNumberMapping();
+            fileTypeMappingTable.AddMagicNumbers(DocumentMagicNumbers.PDFMagicNumbers, DocumentMagicNumbers.PDF);
+            var fileTypeIdentifier = new FileTypeIdentifier(fileTypeMappingTable);
             
-            
+            services.AddSingleton<IFileTypeIdentifier>(fileTypeIdentifier);
 
             // Configure the web API to be able to receive as large files as possible
             services.Configure<FormOptions>(x =>
