@@ -92,6 +92,9 @@ namespace PDFDataExtraction.PDF2Text
                 outputPages.Add(outputPage);
             }
 
+            var allCharacters = outputPages.SelectMany(p => p.Lines.SelectMany(l => l.Words.SelectMany(w => w.Characters)));
+            var wordsByFontSize = FontSizeGroupsCreator.FindFontSizeGroups(allCharacters);
+
             return new Document()
             {
                 Pages = outputPages.ToArray()
