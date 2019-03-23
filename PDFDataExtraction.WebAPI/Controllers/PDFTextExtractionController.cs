@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using JNysteen.FileTypeIdentifier.Interfaces;
+using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -11,6 +13,7 @@ using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Text;
 using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.PDFToText.Models;
+using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
 
 namespace PDFDataExtraction.WebAPI.Controllers
@@ -33,11 +36,16 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
         
         [HttpPost("detailed")]
-        public async Task<IActionResult> DetailedExtraction([FromForm] IFormFile file)
+        [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
-            // TODO Check if actually a PDF file
-
             var result = new PDFTextExtractionResult();
+            
+            if(!ModelState.IsValid)
+            {
+                result.ErrorMessage = ModelState.Values.PrettyPrint();
+                return new BadRequestObjectResult(result);
+            }
             
             Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
             
@@ -55,9 +63,14 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
                 
         [HttpPost("simple")]
-        public async Task<IActionResult> SimpleExtraction([FromForm] IFormFile file)
+        [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
-            // TODO Check if actually a PDF file
+            if(!ModelState.IsValid)
+            {
+                var errorsAsString = ModelState.Values.PrettyPrint();
+                return new BadRequestObjectResult(errorsAsString);
+            }
 
             var pdfToTextArgs = new PDFToTextArgs();
 

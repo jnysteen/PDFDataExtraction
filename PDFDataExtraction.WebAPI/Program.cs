@@ -20,13 +20,14 @@ namespace PDFDataExtraction.WebAPI
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-//                .UseKestrel(options =>
-//                {
+                .UseKestrel(options =>
+                {
 //                    options.Limits.MinRequestBodyDataRate =
 //                        new MinDataRate(bytesPerSecond: 80, gracePeriod: TimeSpan.FromSeconds(20));
 //                    options.Limits.MinResponseDataRate =
 //                        new MinDataRate(bytesPerSecond: 80, gracePeriod: TimeSpan.FromSeconds(20));
-//                })
+//                    options.Limits.MaxRequestBodySize = null;
+                })
                 .UseStartup<Startup>();
     }
 }

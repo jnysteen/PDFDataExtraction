@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using JNysteen.FileTypeIdentifier.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.PDFToText.Models;
+using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
 
 namespace PDFDataExtraction.WebAPI.Controllers
@@ -17,10 +19,12 @@ namespace PDFDataExtraction.WebAPI.Controllers
     public class PDFToTextController : ControllerBase
     {
         private readonly IPDFToTextWrapper _pdfToTextWrapper;
+        private readonly IFileTypeIdentifier _fileTypeIdentifier;
 
-        public PDFToTextController(IPDFToTextWrapper pdfToTextWrapper)
+        public PDFToTextController(IPDFToTextWrapper pdfToTextWrapper, IFileTypeIdentifier fileTypeIdentifier)
         {
             _pdfToTextWrapper = pdfToTextWrapper;
+            _fileTypeIdentifier = fileTypeIdentifier;
         }
         
         [HttpGet]
@@ -30,14 +34,18 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
         
         [HttpPost("simple")]
-        public async Task<IActionResult> SimpleExtraction([FromForm] IFormFile file)
+        [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
-            // TODO Check if actually a PDF file
-
-            var pdfToTextArgs = new PDFToTextArgs();
-
             var result = new PDFToTextResult();
             
+            if(!ModelState.IsValid)
+            {
+                result.ErrorMessage = ModelState.Values.PrettyPrint();
+                return new BadRequestObjectResult(result);
+            }
+            
+            var pdfToTextArgs = new PDFToTextArgs();
             Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
             try
@@ -54,18 +62,23 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
         
         [HttpPost("detailed")]
-        public async Task<IActionResult> DetailedExtraction([FromForm] IFormFile file)
+        [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
-            // TODO Check if actually a PDF file
-
+            var result = new PDFToTextResult();
+            
+            if(!ModelState.IsValid)
+            {
+                result.ErrorMessage = ModelState.Values.PrettyPrint();
+                return new BadRequestObjectResult(result);
+            }
+            
             var pdfToTextArgs = new PDFToTextArgs()
             {
                 OutputBoundingBox = true,
                 OutputBoundingBoxLayout = true
             };
 
-            var result = new PDFToTextResult();
-            
             Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
             try
