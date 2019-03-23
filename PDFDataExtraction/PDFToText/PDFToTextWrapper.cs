@@ -17,6 +17,13 @@ namespace PDFDataExtraction.PDFToText
 {
     public class PDFToTextWrapper : IPDFToTextWrapper, IPDFTextExtractor
     {
+        private readonly XmlSerializer _xmlSerializer;
+
+        public PDFToTextWrapper()
+        {
+            _xmlSerializer = new XmlSerializer(typeof(Models.PDFToTextDocumentBoundingBoxLayout.Html));
+        }
+
         public async Task<string> ExtractTextFromPDF(string inputFilePath, PDFToTextArgs pdfToTextArgs)
         {
             var otherArgsAsString = pdfToTextArgs.GetArgsAsString();
@@ -29,38 +36,34 @@ namespace PDFDataExtraction.PDFToText
             var (statusCode, stdOutput) = await CmdLineHelper.Run(applicationName, args);
             
             if (statusCode != 0)
-                throw new PDFTextExtractionException($"pdftotext exited with status code: {statusCode}");
+                throw new PDFTextExtractionException($"{applicationName} exited with status code: {statusCode}");
+            
+            if(string.IsNullOrEmpty(stdOutput))
+                throw new PDFTextExtractionException($"{applicationName} completed without outputting anything!");
 
             return stdOutput;
         }
 
-        public async Task<Models.PDFToTextDocumentBoundingBoxLayout.Html> ExtractTextFromPDFBoundingBoxLayout(
-            string inputFilePath, PDFToTextArgs pdfToTextArgs)
+        public async Task<Models.PDFToTextDocumentBoundingBoxLayout.Html> ExtractTextFromPDFBoundingBoxLayout(string inputFilePath, PDFToTextArgs pdfToTextArgs)
         {
             pdfToTextArgs.OutputBoundingBoxLayout = true;
             var extractedXml = await ExtractTextFromPDF(inputFilePath, pdfToTextArgs);
 
-            var xmlSerializer = new XmlSerializer(typeof(Models.PDFToTextDocumentBoundingBoxLayout.Html));
-
             using (var reader = new StringReader(extractedXml))
             {
-                var deserializedDoc =
-                    (Models.PDFToTextDocumentBoundingBoxLayout.Html) xmlSerializer.Deserialize(reader);
+                var deserializedDoc = (Models.PDFToTextDocumentBoundingBoxLayout.Html) _xmlSerializer.Deserialize(reader);
                 return deserializedDoc;
             }
         }
 
-        public async Task<Models.PDFToTextDocumentBoundingBox.Html> ExtractTextFromPDFBoundingBox(string inputFilePath,
-            PDFToTextArgs pdfToTextArgs)
+        public async Task<Models.PDFToTextDocumentBoundingBox.Html> ExtractTextFromPDFBoundingBox(string inputFilePath, PDFToTextArgs pdfToTextArgs)
         {
             pdfToTextArgs.OutputBoundingBox = true;
             var extractedXml = await ExtractTextFromPDF(inputFilePath, pdfToTextArgs);
 
-            var xmlSerializer = new XmlSerializer(typeof(Models.PDFToTextDocumentBoundingBox.Html));
-
             using (var reader = new StringReader(extractedXml))
             {
-                var deserializedDoc = (Models.PDFToTextDocumentBoundingBox.Html) xmlSerializer.Deserialize(reader);
+                var deserializedDoc = (Models.PDFToTextDocumentBoundingBox.Html) _xmlSerializer.Deserialize(reader);
                 return deserializedDoc;
             }
         }
@@ -73,115 +76,7 @@ namespace PDFDataExtraction.PDFToText
             };
 
             var extractedHtml = await ExtractTextFromPDFBoundingBox(inputFilePath, args);
-            return MapToDocument(extractedHtml);
-        }
-
-        private static Document MapToDocument(Models.PDFToTextDocumentBoundingBox.Html html)
-        {
-            var pages = html.Body.Doc.Page;
-
-            var outputPages = new List<Page>();
-
-            foreach (var page in pages)
-            {
-                var outputPage = new Page
-                {
-                    Width = page.Width, 
-                    Height = page.Height, 
-                    Lines = ConstructLinesFromWords(page.Word)
-                };
-
-                outputPages.Add(outputPage);
-            }
-
-            return new Document()
-            {
-                Pages = outputPages.ToArray()
-            };
-        }
-
-        private static Line[] ConstructLinesFromWords(List<Models.PDFToTextDocumentBoundingBox.Word> words)
-        {
-            Func<Word, Word, bool> lineGroupingCondition =
-                (thisWord, thatWord) => Math.Abs(thisWord.BoundingBox.MaxY - thatWord.BoundingBox.MaxY) < 0.1;
-                
-            Func<IEnumerable<Word>, Line> lineCreator = wordsInLine => new Line() {Words = wordsInLine.ToArray()}; 
-
-            var mappedWords = words.Select(MapFromWord);
-            var wordsInReadingOrder = mappedWords.OrderBy(w => w.BoundingBox.MinY).ThenBy(w => w.BoundingBox.MinX).ToList();
-            
-            var constructedLines = Grouper.GroupByCondition(mappedWords, lineGroupingCondition, lineCreator);
-
-            return constructedLines.ToArray();
-        }
-
-        private static Character[] FakeCharactersFromString(Models.PDFToTextDocumentBoundingBox.Word oldWord)
-        {
-            var charsInWord = oldWord.Text.ToCharArray();
-            var oldWordWidth = oldWord.XMax - oldWord.XMin;
-            
-            var widthPerCharacter = oldWordWidth / charsInWord.Length;
-
-            var nextCharStartX = oldWord.XMin;
-
-            var characters = new Character[charsInWord.Length];
-            
-            for (int i = 0; i < charsInWord.Length; i++)
-            {
-                var charInWord = charsInWord[i];
-
-                var character = new Character()
-                {
-                    Text = charInWord.ToString(),
-                    BoundingBox = new BoundingBox()
-                    {
-                        TopLeftCorner = new Point()
-                        {
-                            X = nextCharStartX,
-                            Y = oldWord.YMin
-                        },
-                        BottomRightCorner = new Point()
-                        {
-                            X = nextCharStartX + widthPerCharacter,
-                            Y = oldWord.YMax
-                        }
-                    }
-                };
-
-                nextCharStartX += widthPerCharacter;
-                characters[i] = character;
-            }
-
-            return characters;
-        }
-
-        private static Word MapFromWord(Models.PDFToTextDocumentBoundingBox.Word oldWord)
-        {
-            return new Word()
-            {
-                BoundingBox = new BoundingBox()
-                {
-                    TopLeftCorner = new Point()
-                    {
-                        X = oldWord.XMin,
-                        Y = oldWord.YMin
-                    },
-                    BottomRightCorner = new Point()
-                    {
-                        X = oldWord.XMax,
-                        Y = oldWord.YMax
-                    }
-                },
-                Characters = FakeCharactersFromString(oldWord)
-            };
-        }
-
-        private static Line MapFromWordStack(Stack<Word> stack)
-        {
-            return new Line()
-            {
-                Words = stack.Reverse().ToArray()
-            };
+            return PDFToTextMapper.MapToDocument(extractedHtml);
         }
     }
 }

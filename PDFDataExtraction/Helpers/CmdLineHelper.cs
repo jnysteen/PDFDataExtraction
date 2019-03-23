@@ -6,7 +6,7 @@ namespace PDFDataExtraction.Helpers
 {
     public static class CmdLineHelper
     {
-        public static async Task<(int, string)> Run(string applicationName, string args)
+        public static async Task<(int exitCode, string stdOutput)> Run(string applicationName, string args)
         {
             var escapedArgs = args.Replace("\"", "\\\"");
 

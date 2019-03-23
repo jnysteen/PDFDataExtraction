@@ -1,8 +1,7 @@
-using System;
 using PDFDataExtraction.PDFToText.Models;
 using Xunit;
 
-namespace PDFDataExtraction.Tests
+namespace PDFDataExtraction.Tests.PDFToText
 {
     public class PDFToTextArgsUT
     {
