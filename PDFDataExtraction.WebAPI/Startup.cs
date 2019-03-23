@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PDFDataExtraction.Generic;
-using PDFDataExtraction.PDF2Text;
+using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.WebAPI.Helpers;
 
@@ -63,8 +63,8 @@ namespace PDFDataExtraction.WebAPI
             services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
             services.AddSingleton<IPDFTextExtractor>(pdfToTextWrapper);
 
-            var pdf2TextWrapper = new PDF2TextWrapper(); 
-            services.AddSingleton<IPDF2TextWrapper>(pdf2TextWrapper);
+            var pdf2TextWrapper = new PDF2TxtWrapper(); 
+            services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
             
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }

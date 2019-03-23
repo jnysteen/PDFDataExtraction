@@ -4,13 +4,13 @@ using System.Linq;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
-using PDFDataExtraction.PDF2Text.Models;
+using PDFDataExtraction.PDF2Txt.Models;
 using Line = PDFDataExtraction.Generic.Line;
 using Page = PDFDataExtraction.Generic.Page;
 
-namespace PDFDataExtraction.PDF2Text
+namespace PDFDataExtraction.PDF2Txt
 {
-    internal static class PDF2TextMapper
+    internal static class PDF2TxtMapper
     {
         public static Document MapToDocument(Pages pages)
         {

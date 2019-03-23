@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
-using PDFDataExtraction.PDF2Text;
+using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.PDFToText.Models;
 using PDFDataExtraction.WebAPI.Helpers;
@@ -22,9 +22,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
     [ApiController]
     public class PDFTextExtractionController : ControllerBase
     {
-        private readonly IPDF2TextWrapper _pdfTextExtractor;
+        private readonly IPDF2TxtWrapper _pdfTextExtractor;
 
-        public PDFTextExtractionController(IPDF2TextWrapper pdfTextExtractor)
+        public PDFTextExtractionController(IPDF2TxtWrapper pdfTextExtractor)
         {
             _pdfTextExtractor = pdfTextExtractor;
         }

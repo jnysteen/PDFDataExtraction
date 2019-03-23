@@ -9,18 +9,18 @@ using System.Xml.Serialization;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
-using PDFDataExtraction.PDF2Text.Models;
+using PDFDataExtraction.PDF2Txt.Models;
 using PDFDataExtraction.PDFToText.Models;
 using Line = PDFDataExtraction.Generic.Line;
 using Page = PDFDataExtraction.Generic.Page;
 
-namespace PDFDataExtraction.PDF2Text
+namespace PDFDataExtraction.PDF2Txt
 {
-    public class PDF2TextWrapper : IPDF2TextWrapper
+    public class PDF2TxtWrapper : IPDF2TxtWrapper
     {
         private readonly XmlSerializer _xmlSerializer;
 
-        public PDF2TextWrapper()
+        public PDF2TxtWrapper()
         {
             _xmlSerializer = new XmlSerializer(typeof(Pages));
         }
@@ -48,7 +48,7 @@ namespace PDFDataExtraction.PDF2Text
         public async Task<Document> ExtractTextFromPDF(string inputFilePath)
         {
             var extractedXml = await ExtractText(inputFilePath);
-            var mapped = PDF2TextMapper.MapToDocument(extractedXml);
+            var mapped = PDF2TxtMapper.MapToDocument(extractedXml);
             return mapped;
         }
     }

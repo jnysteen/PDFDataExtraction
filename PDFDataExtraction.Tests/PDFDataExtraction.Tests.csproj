@@ -16,4 +16,10 @@
       <ProjectReference Include="..\PDFDataExtraction\PDFDataExtraction.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include=".\**\TestFiles\*" Exclude = ".\**\TestFiles\*.cs">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

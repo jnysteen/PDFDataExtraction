@@ -7,7 +7,7 @@
    using System.Collections.Generic;
    using System.Xml.Serialization;
 
-   namespace PDFDataExtraction.PDF2Text.Models
+   namespace PDFDataExtraction.PDF2Txt.Models
 {
 	[XmlRoot(ElementName="text")]
 	public class TextNode {

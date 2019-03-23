@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
-using PDFDataExtraction.PDF2Text.Models;
+using PDFDataExtraction.PDF2Txt.Models;
 using Line = PDFDataExtraction.Generic.Line;
 using Page = PDFDataExtraction.Generic.Page;
 
