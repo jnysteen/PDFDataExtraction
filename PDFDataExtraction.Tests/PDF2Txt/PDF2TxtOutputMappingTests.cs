@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PDF2Txt.Models;
 using PDFDataExtraction.Tests.PDF2Txt.TestFiles;
@@ -50,26 +51,31 @@ namespace PDFDataExtraction.Tests.PDF2Txt
            
            // Check the bounding boxes
            // The coordinate systems of the bounding boxes are local for each page 
-           foreach (var producedDocumentPage in producedDocument.Pages)
-           {
-               var lastMinYOfWord = double.MinValue;
+           CheckBoundingBoxesPositioning(producedDocument);
+        }
 
-               var linesOnPage = producedDocumentPage.Lines;
-               foreach (var line in linesOnPage)
-               {
-                   var lastMinXOfWord = double.MinValue;
-                   foreach (var word in line.Words)
-                   {
-                       var thisMinY = word.BoundingBox.MinY;
-                       Assert.True(thisMinY >= lastMinYOfWord);
-                       lastMinYOfWord = thisMinY;
-                       
-                       var thisMinX = word.BoundingBox.MinX;
-                       Assert.True(thisMinX >= lastMinXOfWord);
-                       lastMinXOfWord = thisMinX;
-                   }
-               }
-           }
+        private static void CheckBoundingBoxesPositioning(Document producedDocument)
+        {
+            foreach (var producedDocumentPage in producedDocument.Pages)
+            {
+                var lastMinYOfWord = double.MinValue;
+
+                var linesOnPage = producedDocumentPage.Lines;
+                foreach (var line in linesOnPage)
+                {
+                    var lastMinXOfWord = double.MinValue;
+                    foreach (var word in line.Words)
+                    {
+                        var thisMinY = word.BoundingBox.MinY;
+                        Assert.True(thisMinY >= lastMinYOfWord);
+                        lastMinYOfWord = thisMinY;
+
+                        var thisMinX = word.BoundingBox.MinX;
+                        Assert.True(thisMinX >= lastMinXOfWord);
+                        lastMinXOfWord = thisMinX;
+                    }
+                }
+            }
         }
 
         private static string LineToString(Generic.Line line)
