@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PDFDataExtraction.WebAPI.Client\PDFDataExtraction.WebAPI.Client.csproj" />
+      <ProjectReference Include="..\PDFDataExtraction.WebAPI\PDFDataExtraction.WebAPI.csproj" />
+    </ItemGroup>
+
+</Project>

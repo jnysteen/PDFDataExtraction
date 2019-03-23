@@ -26,8 +26,6 @@ RUN apk add --update \
     build-base \
   && pip install pdfminer \
   && rm -rf /var/cache/apk/*
-  
-  
 
 WORKDIR /app
 COPY --from=build /app/PDFDataExtraction.WebAPI/out ./
