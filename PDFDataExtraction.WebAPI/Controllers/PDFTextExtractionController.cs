@@ -11,8 +11,6 @@ using Newtonsoft.Json;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
-using PDFDataExtraction.PDFToText;
-using PDFDataExtraction.PDFToText.Models;
 using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
 
@@ -71,9 +69,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 var errorsAsString = ModelState.Values.PrettyPrint();
                 return new BadRequestObjectResult(errorsAsString);
             }
-
-            var pdfToTextArgs = new PDFToTextArgs();
-
+            
             Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
             
             try

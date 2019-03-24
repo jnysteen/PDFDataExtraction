@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
-using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.WebAPI.Helpers;
 
 namespace PDFDataExtraction.WebAPI
@@ -59,10 +58,6 @@ namespace PDFDataExtraction.WebAPI
             var fileTypeIdentifier = new FileTypeIdentifier(magicNumbers);
             services.AddSingleton<IFileTypeIdentifier>(fileTypeIdentifier);
             
-            var pdfToTextWrapper = new PDFToTextWrapper();
-            services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
-            services.AddSingleton<IPDFTextExtractor>(pdfToTextWrapper);
-
             var pdf2TextWrapper = new PDF2TxtWrapper(); 
             services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
             
