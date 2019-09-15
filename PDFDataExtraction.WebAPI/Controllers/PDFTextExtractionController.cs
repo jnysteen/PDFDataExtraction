@@ -35,6 +35,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         
         [HttpPost("detailed")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        [Produces("application/json")]
         public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
             var result = new PDFTextExtractionResult();
@@ -56,6 +57,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 
         [HttpPost("simple")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        [Produces("application/json")]
         public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
             Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;

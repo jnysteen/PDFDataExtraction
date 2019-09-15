@@ -35,6 +35,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         
         [HttpPost("simple")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        [Produces("application/json")]
         public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
             var pdfToTextArgs = new PDFToTextArgs(); //TODO make it possible to pass args as query parameters
@@ -54,8 +55,12 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
         
+        /// <summary>
+        ///     Does not work on multi-page documents due to pdftotext issues. The first page will be read perfectly, but remaining pages will appear empty.
+        /// </summary>
         [HttpPost("detailed")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        [Produces("application/json")]
         public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
             var pdfToTextArgs = new PDFToTextArgs() //TODO make it possible to pass args as query parameters
