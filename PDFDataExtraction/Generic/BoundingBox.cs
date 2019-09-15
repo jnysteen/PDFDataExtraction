@@ -4,7 +4,10 @@ namespace PDFDataExtraction.Generic
 {
     public class BoundingBox
     {
+        [JsonProperty("topLeft")]
         public Point TopLeftCorner { get; set; }
+        
+        [JsonProperty("bottomRight")]
         public Point BottomRightCorner { get; set; }
 
         [JsonIgnore]
