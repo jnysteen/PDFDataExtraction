@@ -48,6 +48,7 @@ namespace PDFDataExtraction.WebAPI.Helpers
             if (errorMessage != null)
             {
                 context.ModelState.AddModelError(inputFileArgumentName, errorMessage);
+                context.Result = new BadRequestObjectResult(context.ModelState);
             }
         }
     }

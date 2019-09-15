@@ -39,12 +39,6 @@ namespace PDFDataExtraction.WebAPI.Controllers
         {
             var result = new PDFTextExtractionResult();
             
-            if(!ModelState.IsValid)
-            {
-                result.ErrorMessage = ModelState.Values.PrettyPrint();
-                return new BadRequestObjectResult(result);
-            }
-            
             Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
             
             try
@@ -64,12 +58,6 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
-            if(!ModelState.IsValid)
-            {
-                var errorsAsString = ModelState.Values.PrettyPrint();
-                return new BadRequestObjectResult(errorsAsString);
-            }
-            
             Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
             
             try

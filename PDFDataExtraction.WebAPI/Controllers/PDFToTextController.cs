@@ -37,17 +37,10 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
-            var result = new PDFToTextResult();
-            
-            if(!ModelState.IsValid)
-            {
-                result.ErrorMessage = ModelState.Values.PrettyPrint();
-                return new BadRequestObjectResult(result);
-            }
-            
-            var pdfToTextArgs = new PDFToTextArgs();
+            var pdfToTextArgs = new PDFToTextArgs(); //TODO make it possible to pass args as query parameters
             Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
+            var result = new PDFToTextResult();
             try
             {
                 var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
@@ -65,15 +58,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
-            var result = new PDFToTextResult();
-            
-            if(!ModelState.IsValid)
-            {
-                result.ErrorMessage = ModelState.Values.PrettyPrint();
-                return new BadRequestObjectResult(result);
-            }
-            
-            var pdfToTextArgs = new PDFToTextArgs()
+            var pdfToTextArgs = new PDFToTextArgs() //TODO make it possible to pass args as query parameters
             {
                 OutputBoundingBox = true,
                 OutputBoundingBoxLayout = true
@@ -81,6 +66,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
 
             Func<string, PDFToTextArgs, Task<string>> extractor = _pdfToTextWrapper.ExtractTextFromPDF;
             
+            var result = new PDFToTextResult();
             try
             {
                 var extractedText = await ExtractText(file, pdfToTextArgs, extractor);
