@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
+using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.WebAPI.Helpers;
 
 namespace PDFDataExtraction.WebAPI
@@ -54,6 +55,18 @@ namespace PDFDataExtraction.WebAPI
                 options.MultipartBodyLengthLimit = maxFileSizeInMB;
                 options.MultipartBoundaryLengthLimit = maxFileSizeInMB;
             });
+            
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+ 
+            services.AddResponseCompression(options =>
+            {
+                options.MimeTypes = new[] {"application/json"};
+//                options.EnableForHttps = true;
+                options.Providers.Add<GzipCompressionProvider>();
+            });
 
             var magicNumbers = new MagicNumberMapping();
             magicNumbers.AddMagicNumbers(DocumentMagicNumbers.PDFMagicNumbers, DocumentMagicNumbers.PDF);
@@ -62,6 +75,9 @@ namespace PDFDataExtraction.WebAPI
             
             var pdf2TextWrapper = new PDF2TxtWrapper(); 
             services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
+            
+            var pdfToTextWrapper = new PDFToTextWrapper(); 
+            services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
             
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }
@@ -77,8 +93,10 @@ namespace PDFDataExtraction.WebAPI
             {
                 app.UseHsts();
             }
+            
+            app.UseResponseCompression();
 
-            app.UseHttpsRedirection();
+//            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
