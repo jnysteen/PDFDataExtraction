@@ -38,6 +38,12 @@ namespace PDFDataExtraction.PDF2Txt
             if(string.IsNullOrEmpty(stdOutput))
                 throw new PDFTextExtractionException($"{applicationName} completed without outputting anything!");
 
+            // Certain documents contain the character 0x00, which ends up in the XML - and that char is not allowed in XML, breaking the serializer.
+            // The lines below removes the invalid char
+            var invalidChar = (char) 0x00; 
+            var invalidCharAsString = invalidChar.ToString();
+            stdOutput = stdOutput.Replace(invalidCharAsString, "");
+            
             using (var reader = new StringReader(stdOutput))
             {
                 var deserializedDoc = (Pages) _xmlSerializer.Deserialize(reader);
