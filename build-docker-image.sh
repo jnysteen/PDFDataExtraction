@@ -1,0 +1,1 @@
+docker build . -t pdf-extraction-web-api
