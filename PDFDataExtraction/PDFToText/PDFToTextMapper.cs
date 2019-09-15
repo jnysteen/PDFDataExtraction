@@ -15,23 +15,15 @@ namespace PDFDataExtraction.PDFToText
         {
             var pages = html.Body.Doc.Page;
 
-            var outputPages = new List<Page>();
-
-            foreach (var page in pages)
-            {
-                var outputPage = new Page
-                {
-                    Width = page.Width,
-                    Height = page.Height,
-                    Lines = ConstructLinesFromWords(page.Word)
-                };
-
-                outputPages.Add(outputPage);
-            }
-
             return new Document()
             {
-                Pages = outputPages.ToArray()
+                Pages = pages
+                    .Select(page => new Page
+                    {
+                        Width = page.Width, 
+                        Height = page.Height, 
+                        Lines = ConstructLinesFromWords(page.Word)
+                    }).ToArray()
             };
         }
 
@@ -109,14 +101,6 @@ namespace PDFDataExtraction.PDFToText
                     }
                 },
                 Characters = FakeCharactersFromString(oldWord)
-            };
-        }
-
-        private static Line MapFromWordStack(Stack<Word> stack)
-        {
-            return new Line()
-            {
-                Words = stack.Reverse().ToArray()
             };
         }
     }
