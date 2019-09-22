@@ -28,14 +28,22 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
         
         [HttpGet]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public IActionResult Get()
         {
             return new OkObjectResult("Test");
         }
-        
+
+        /// <summary>
+        ///     Extract simple text from a PDF
+        /// </summary>
+        /// <param name="file">The PDF to extract text from</param>
+        /// <returns>Text from the provided PDF</returns>
         [HttpPost("simple")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         [Produces("application/json")]
+        [ProducesResponseType(200, Type = typeof(string))]
+        [ProducesResponseType(500, Type = typeof(string))]
         public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
             var pdfToTextArgs = new PDFToTextArgs(); //TODO make it possible to pass args as query parameters
@@ -54,13 +62,20 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 return new BadRequestObjectResult(result);
             }
         }
-        
+
         /// <summary>
-        ///     Does not work on multi-page documents due to pdftotext issues. The first page will be read perfectly, but remaining pages will appear empty.
+        ///     Extract detailed text, including text position, size and font, from a PDF
         /// </summary>
+        /// <remarks>
+        ///     Does not work on multi-page documents due to pdftotext issues. The first page will be read perfectly, but remaining pages will appear empty.
+        /// </remarks>
+        /// <param name="file">The PDF to extract text from</param>
+        /// <returns>Detailed text, including text position, size and font, from the provided PDF</returns>
         [HttpPost("detailed")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         [Produces("application/json")]
+        [ProducesResponseType(200, Type = typeof(PDFToTextResult))]
+        [ProducesResponseType(500, Type = typeof(PDFToTextResult))]
         public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
             var pdfToTextArgs = new PDFToTextArgs() //TODO make it possible to pass args as query parameters

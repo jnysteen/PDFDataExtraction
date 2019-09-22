@@ -28,14 +28,22 @@ namespace PDFDataExtraction.WebAPI.Controllers
         }
         
         [HttpGet]
+        [ApiExplorerSettings(IgnoreApi =true)]
         public IActionResult Get()
         {
             return new OkObjectResult("Test");
         }
         
+        /// <summary>
+        ///     Extract detailed text, including text position, size and font, from a PDF
+        /// </summary>
+        /// <param name="file">The PDF to extract text from</param>
+        /// <returns>Detailed text, including text position, size and font, from the provided PDF</returns>
         [HttpPost("detailed")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         [Produces("application/json")]
+        [ProducesResponseType(200, Type = typeof(PDFTextExtractionResult))]
+        [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
         public async Task<IActionResult> DetailedExtraction(IFormFile file)
         {
             var result = new PDFTextExtractionResult();
@@ -54,9 +62,16 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 return new BadRequestObjectResult(result);
             }
         }
-                
+        
+        /// <summary>
+        ///     Extract simple text from a PDF
+        /// </summary>
+        /// <param name="file">The PDF to extract text from</param>
+        /// <returns>Text from the provided PDF</returns>
         [HttpPost("simple")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        [ProducesResponseType(200, Type = typeof(string))]
+        [ProducesResponseType(500, Type = typeof(string))]
         [Produces("application/json")]
         public async Task<IActionResult> SimpleExtraction(IFormFile file)
         {
