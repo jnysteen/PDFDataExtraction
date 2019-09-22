@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PDFToText;
@@ -40,31 +41,33 @@ namespace PDFDataExtraction.WebAPI
             {
                 config.RespectBrowserAcceptHeader = true;
                 config.ReturnHttpNotAcceptable = true;
-                
+
                 config.InputFormatters.Add(new XmlSerializerInputFormatter());
                 config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-            
+
             var maxFileSizeInMB = 20 * 1024 * 1024;
             // Configure the web API to be able to receive as large files as possible
             services.Configure<FormOptions>(options =>
             {
                 options.ValueCountLimit = maxFileSizeInMB;
                 options.MemoryBufferThreshold = maxFileSizeInMB;
-                options.ValueLengthLimit = maxFileSizeInMB; 
+                options.ValueLengthLimit = maxFileSizeInMB;
                 options.MultipartBodyLengthLimit = maxFileSizeInMB;
                 options.MultipartBoundaryLengthLimit = maxFileSizeInMB;
             });
-            
+
+            services.ConfigureSwagger();
+
             services.Configure<GzipCompressionProviderOptions>(options =>
             {
                 options.Level = CompressionLevel.Optimal;
             });
- 
+
             services.AddResponseCompression(options =>
             {
-                options.MimeTypes = new[] {"application/json"};
-//                options.EnableForHttps = true;
+                options.MimeTypes = new[] { "application/json" };
+                //                options.EnableForHttps = true;
                 options.Providers.Add<GzipCompressionProvider>();
             });
 
@@ -72,19 +75,21 @@ namespace PDFDataExtraction.WebAPI
             magicNumbers.AddMagicNumbers(DocumentMagicNumbers.PDFMagicNumbers, DocumentMagicNumbers.PDF);
             var fileTypeIdentifier = new FileTypeIdentifier(magicNumbers);
             services.AddSingleton<IFileTypeIdentifier>(fileTypeIdentifier);
-            
-            var pdf2TextWrapper = new PDF2TxtWrapper(); 
+
+            var pdf2TextWrapper = new PDF2TxtWrapper();
             services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
-            
-            var pdfToTextWrapper = new PDFToTextWrapper(); 
+
+            var pdfToTextWrapper = new PDFToTextWrapper();
             services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
-            
+
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.ConfigureSwagger();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -93,10 +98,10 @@ namespace PDFDataExtraction.WebAPI
             {
                 app.UseHsts();
             }
-            
+
             app.UseResponseCompression();
 
-//            app.UseHttpsRedirection();
+            //            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
