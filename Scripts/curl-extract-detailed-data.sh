@@ -1,3 +1,5 @@
+#!/bin/sh
+
 if [ -z "$1" ]; then
     echo "No input file provided!"
     exit
@@ -8,4 +10,4 @@ if [ -z "$2" ]; then
     exit
 fi
 
-curl -v --output $2 -F file=@$1 http://localhost:6000/api/PDFTextExtraction/detailed
+curl -o $2 -F file=@$1 http://localhost:6000/api/PDFTextExtraction/detailed
