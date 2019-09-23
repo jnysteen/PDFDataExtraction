@@ -26,9 +26,9 @@ namespace PDFDataExtraction.Helpers
                     continue;
                 }
 
-                var latestAddedWord = groupUnderConstruction.Peek();
+                var latestAddedPart = groupUnderConstruction.Peek();
 
-                if (groupingCondition(latestAddedWord, partToBeExamined))
+                if (groupingCondition(latestAddedPart, partToBeExamined))
                 {
                     groupUnderConstruction.Push(partToBeExamined);
                     continue;

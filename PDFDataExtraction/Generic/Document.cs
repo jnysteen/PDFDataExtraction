@@ -7,6 +7,9 @@ namespace PDFDataExtraction.Generic
 {
     public class Document
     {
+        /// <summary>
+        ///     The pages of the document
+        /// </summary>
         public Page[] Pages { get; set; }
 
         public string GetAsString()
