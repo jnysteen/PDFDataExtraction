@@ -1,9 +1,9 @@
 using System.IO;
 using System.Net.Http;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using PDFDataExtraction.Generic;
 
 namespace PDFDataExtraction.WebAPI.Client
 {

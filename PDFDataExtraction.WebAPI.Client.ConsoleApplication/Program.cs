@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 {
@@ -35,7 +36,11 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                 using (var inputFileStream = File.OpenRead(formattedInputFilePath))
                 {
                     Console.WriteLine("Sending request to API now...");
-                    var extractedText = await pdfExtractionClient.ExtractTextFromPDF(inputFileStream);
+
+                    var extractedDocument = await pdfExtractionClient.ExtractDocumentFromPDF(inputFileStream);
+                    var extractedText = JsonConvert.SerializeObject(extractedDocument, Formatting.Indented);
+
+                    // var extractedText = await pdfExtractionClient.ExtractTextFromPDF(inputFileStream);
 
                     Console.WriteLine($"Response received, saving result to '{outputFilePath}' now...");
                     File.WriteAllText(outputFilePath, extractedText);
