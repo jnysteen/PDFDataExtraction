@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PDF2Txt.Models;
@@ -24,7 +25,7 @@ namespace PDFDataExtraction.Tests.PDF2Txt
             using (var fileStream = File.OpenRead(inputFile))
                 deserializedDoc = (Pages) xmlSerializer.Deserialize(fileStream);
 
-            var producedDocument = PDF2TxtMapper.MapToDocument(deserializedDoc);
+            var producedDocument = PDF2TxtMapper.MapToDocument(deserializedDoc, new DocElementConstructionConfiguration());
             
             // Check the amount of elements
             var numberOfPagesExpected = 2;

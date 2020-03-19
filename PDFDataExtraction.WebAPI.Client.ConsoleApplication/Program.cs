@@ -2,6 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using PDFDataExtraction.Generic;
+using PDFDataExtraction.PDFToText.Models.PDFToTextDocumentBoundingBox;
 
 namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 {
@@ -31,7 +33,8 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 
                 var inputFileDirectory = Path.GetDirectoryName(formattedInputFilePath);
                 var inputFileName = Path.GetFileNameWithoutExtension(formattedInputFilePath);
-                var outputFilePath = $"{inputFileDirectory}\\{inputFileName}-extracted-data.txt";
+                var outputFilePath = $"{inputFileDirectory}\\{inputFileName}-extracted-data.json";
+                var outputFilePathSimple = $"{inputFileDirectory}\\{inputFileName}-extracted-data.simple.txt";
 
                 using (var inputFileStream = File.OpenRead(formattedInputFilePath))
                 {
@@ -40,10 +43,14 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                     var extractedDocument = await pdfExtractionClient.ExtractDocumentFromPDF(inputFileStream);
                     var extractedText = JsonConvert.SerializeObject(extractedDocument, Formatting.Indented);
 
-                    // var extractedText = await pdfExtractionClient.ExtractTextFromPDF(inputFileStream);
+                    var extractedTextSimple = extractedDocument.GetAsString();
+                    Console.WriteLine(extractedTextSimple);
 
+                    // var extractedText = await pdfExtractionClient.ExtractTextFromPDF(inputFileStream);
+                    
                     Console.WriteLine($"Response received, saving result to '{outputFilePath}' now...");
                     File.WriteAllText(outputFilePath, extractedText);
+                    File.WriteAllText(outputFilePathSimple, extractedTextSimple);
                 }
             }
         }

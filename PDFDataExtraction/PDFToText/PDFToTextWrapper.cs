@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
@@ -68,7 +69,7 @@ namespace PDFDataExtraction.PDFToText
             }
         }
 
-        public async Task<Document> ExtractTextFromPDF(string inputFilePath)
+        public async Task<Document> ExtractTextFromPDF(string inputFilePath, DocElementConstructionConfiguration docElementConstructionConfiguration)
         {
             var args = new PDFToTextArgs()
             {

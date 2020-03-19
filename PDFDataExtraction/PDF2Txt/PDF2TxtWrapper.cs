@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
@@ -51,10 +52,10 @@ namespace PDFDataExtraction.PDF2Txt
             }
         }
 
-        public async Task<Document> ExtractTextFromPDF(string inputFilePath)
+        public async Task<Document> ExtractTextFromPDF(string inputFilePath, DocElementConstructionConfiguration docElementConstructionConfiguration)
         {
             var extractedXml = await ExtractText(inputFilePath);
-            var mapped = PDF2TxtMapper.MapToDocument(extractedXml);
+            var mapped = PDF2TxtMapper.MapToDocument(extractedXml, docElementConstructionConfiguration);
             return mapped;
         }
     }

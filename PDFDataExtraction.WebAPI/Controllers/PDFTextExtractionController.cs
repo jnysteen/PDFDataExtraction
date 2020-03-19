@@ -8,6 +8,7 @@ using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PDF2Txt;
@@ -44,15 +45,22 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200, Type = typeof(PDFTextExtractionResult))]
         [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
-        public async Task<IActionResult> DetailedExtraction(IFormFile file)
+        public async Task<IActionResult> DetailedExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
         {
             var result = new PDFTextExtractionResult();
             
-            Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+            Func<string, DocElementConstructionConfiguration, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+
+            var conf = new DocElementConstructionConfiguration();
+            
+            if (wordDiff.HasValue)
+                conf.MaxPixelDifferenceInWordsInTheSameLine = wordDiff.Value;
+            if (whiteSpaceFactor.HasValue)
+                conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = whiteSpaceFactor.Value;
             
             try
             {
-                var extractedText = await ExtractText(file, extractor);
+                var extractedText = await ExtractText(file, conf, extractor);
                 result.ExtractedData = extractedText;
                 return new OkObjectResult(extractedText);
             }
@@ -73,13 +81,20 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(500, Type = typeof(string))]
         [Produces("application/json")]
-        public async Task<IActionResult> SimpleExtraction(IFormFile file)
+        public async Task<IActionResult> SimpleExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
         {
-            Func<string, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+            Func<string, DocElementConstructionConfiguration, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+
+            var conf = new DocElementConstructionConfiguration();
+            
+            if (wordDiff.HasValue)
+                conf.MaxPixelDifferenceInWordsInTheSameLine = wordDiff.Value;
+            if (whiteSpaceFactor.HasValue)
+                conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = whiteSpaceFactor.Value;
             
             try
             {
-                var extractedText = await ExtractText(file, extractor);
+                var extractedText = await ExtractText(file, conf, extractor);
                 var documentAsString = extractedText.GetAsString();
                 return new OkObjectResult(documentAsString);
             }
@@ -89,7 +104,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
         
-        private static async Task<T> ExtractText<T>(IFormFile file, Func<string, Task<T>> extractor)
+        private static async Task<T> ExtractText<T>(IFormFile file, DocElementConstructionConfiguration config, Func<string, DocElementConstructionConfiguration, Task<T>> extractor)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilePath = $"./uploaded-files/{fileId}.pdf";
@@ -100,7 +115,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
                     await file.CopyToAsync(fileStream);
 
-                var result = await extractor(inputFilePath);
+                var result = await extractor(inputFilePath, config);
                 return result;
             }
             finally
