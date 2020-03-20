@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace PDFDataExtraction.Generic
 {
     public class Page
@@ -16,5 +18,10 @@ namespace PDFDataExtraction.Generic
         ///     The height of the page in //TODO WHAT UNIT?
         /// </summary>
         public double Height { get; set; }
+        
+        public override string ToString()
+        {
+            return string.Join("\n", Lines.Select(l => l.ToString()));
+        }
     }
 }
