@@ -1,26 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO.Compression;
 using JNysteen.FileTypeIdentifier;
 using JNysteen.FileTypeIdentifier.Interfaces;
 using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using PDFDataExtraction.Generic;
+using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
-using PDFDataExtraction.PDFToText;
 using PDFDataExtraction.WebAPI.Helpers;
 
 namespace PDFDataExtraction.WebAPI
@@ -79,8 +70,6 @@ namespace PDFDataExtraction.WebAPI
             var pdf2TextWrapper = new PDF2TxtWrapper();
             services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
 
-            var pdfToTextWrapper = new PDFToTextWrapper();
-            services.AddSingleton<IPDFToTextWrapper>(pdfToTextWrapper);
 
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }
