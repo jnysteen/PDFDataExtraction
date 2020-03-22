@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.WebAPI.Models;
 
 namespace PDFDataExtraction.WebAPI.Client
 {
@@ -24,7 +25,7 @@ namespace PDFDataExtraction.WebAPI.Client
             _apiEndpoint = apiEndpoint;
         }
 
-        public async Task<Document> ExtractDocumentFromPDF(Stream inputFileStream, int? wordDiff = null, double? whiteSpaceFactor = null)
+        public async Task<PDFTextExtractionResult> ExtractDocumentFromPDF(Stream inputFileStream, int? wordDiff = null, double? whiteSpaceFactor = null)
         {
             var httpClient = _httpClientFactory.CreateClient();
             var requestUri = _apiEndpoint + "/api/PDFTextExtraction/detailed";
@@ -41,7 +42,7 @@ namespace PDFDataExtraction.WebAPI.Client
             {
                 response.EnsureSuccessStatusCode();
                 var responseBodyAsString = await response.Content.ReadAsStringAsync();
-                var deserializedResponse = JsonConvert.DeserializeObject<Document>(responseBodyAsString);
+                var deserializedResponse = JsonConvert.DeserializeObject<PDFTextExtractionResult>(responseBodyAsString);
                 return deserializedResponse;
             }
         }

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
@@ -22,10 +23,12 @@ namespace PDFDataExtraction.WebAPI.Controllers
     public class PDFTextExtractionController : ControllerBase
     {
         private readonly IPDF2TxtWrapper _pdfTextExtractor;
+        private readonly IPdfToImagesConverter _pdfToImagesConverter;
 
-        public PDFTextExtractionController(IPDF2TxtWrapper pdfTextExtractor)
+        public PDFTextExtractionController(IPDF2TxtWrapper pdfTextExtractor, IPdfToImagesConverter pdfToImagesConverter)
         {
             _pdfTextExtractor = pdfTextExtractor;
+            _pdfToImagesConverter = pdfToImagesConverter;
         }
         
         [HttpGet]
@@ -45,7 +48,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200, Type = typeof(PDFTextExtractionResult))]
         [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
-        public async Task<IActionResult> DetailedExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
+        public async Task<ActionResult<PDFTextExtractionResult>> DetailedExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
         {
             var result = new PDFTextExtractionResult();
             
@@ -60,9 +63,10 @@ namespace PDFDataExtraction.WebAPI.Controllers
             
             try
             {
-                var extractedText = await ExtractText(file, conf, extractor);
-                result.ExtractedData = extractedText;
-                return new OkObjectResult(extractedText);
+                var processFileResult = await ProcessFile(file, conf, extractor, _pdfToImagesConverter.ConvertPdfToPngs);
+                result.ExtractedData = processFileResult.extractedData;
+                result.PagesAsPNGs = processFileResult.extractedImages;
+                return result;
             }
             catch (Exception e)
             {
@@ -83,8 +87,6 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> SimpleExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
         {
-            Func<string, DocElementConstructionConfiguration, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
-
             var conf = new DocElementConstructionConfiguration();
             
             if (wordDiff.HasValue)
@@ -94,8 +96,8 @@ namespace PDFDataExtraction.WebAPI.Controllers
             
             try
             {
-                var extractedText = await ExtractText(file, conf, extractor);
-                var documentAsString = extractedText.GetAsString();
+                var extractionResult = await ProcessFile(file, conf, _pdfTextExtractor.ExtractTextFromPDF, null);
+                var documentAsString = extractionResult.extractedData.GetAsString();
                 return new OkObjectResult(documentAsString);
             }
             catch (Exception e)
@@ -103,8 +105,8 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 return new BadRequestObjectResult(e.Message);
             }
         }
-        
-        private static async Task<T> ExtractText<T>(IFormFile file, DocElementConstructionConfiguration config, Func<string, DocElementConstructionConfiguration, Task<T>> extractor)
+
+        private static async Task<(T extractedData, PageAsImage[] extractedImages)> ProcessFile<T>(IFormFile file, DocElementConstructionConfiguration config, Func<string, DocElementConstructionConfiguration, Task<T>> dataExtractor, Func<string, Task<PageAsImage[]>> imageConverter)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilePath = $"./uploaded-files/{fileId}.pdf";
@@ -114,9 +116,13 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 // Save file to disk
                 using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
                     await file.CopyToAsync(fileStream);
+                
+                PageAsImage[] convertedImages = null;
+                if(imageConverter != null)
+                    convertedImages = await imageConverter(inputFilePath);
 
-                var result = await extractor(inputFilePath, config);
-                return result;
+                var extractedData = await dataExtractor(inputFilePath, config);
+                return (extractedData, convertedImages);
             }
             finally
             {

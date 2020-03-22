@@ -23,10 +23,10 @@ namespace PDFDataExtraction.Helpers
             };
 
             process.Start();
-            var pdfToTextOutput = await process.StandardOutput.ReadToEndAsync();
+            var stdOutput = await process.StandardOutput.ReadToEndAsync();
             process.WaitForExit();
 
-            return (process.ExitCode, pdfToTextOutput);
+            return (process.ExitCode, stdOutput);
         }
     }
 }

@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\PDFDataExtraction.WebAPI\PDFDataExtraction.WebAPI.csproj" />
       <ProjectReference Include="..\PDFDataExtraction\PDFDataExtraction.csproj" />
     </ItemGroup>
 

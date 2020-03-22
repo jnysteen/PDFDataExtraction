@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction", "PDFDataExtraction\PDFDataExtraction.csproj", "{38C9277A-527E-42DC-A590-CA4B92AD96AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.ConsoleApplication", "PDFDataExtraction.ConsoleApplication\PDFDataExtraction.ConsoleApplication.csproj", "{702850F3-1220-4679-AD52-8CD4E713A5A6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.Tests", "PDFDataExtraction.Tests\PDFDataExtraction.Tests.csproj", "{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.WebAPI", "PDFDataExtraction.WebAPI\PDFDataExtraction.WebAPI.csproj", "{64F6418F-0177-4506-BE0C-1A978D398054}"
@@ -22,10 +20,6 @@ Global
 		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38C9277A-527E-42DC-A590-CA4B92AD96AB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{702850F3-1220-4679-AD52-8CD4E713A5A6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C90BCBDB-F4FA-4463-AEBC-3C022CE666DF}.Release|Any CPU.ActiveCfg = Release|Any CPU

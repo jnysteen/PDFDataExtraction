@@ -28,6 +28,7 @@ namespace PDFDataExtraction.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging();
             services.AddMvc(config =>
             {
                 config.RespectBrowserAcceptHeader = true;
@@ -70,6 +71,7 @@ namespace PDFDataExtraction.WebAPI
             var pdf2TextWrapper = new PDF2TxtWrapper();
             services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
 
+            services.AddScoped<IPdfToImagesConverter, GhostScriptWrapper>();
 
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }

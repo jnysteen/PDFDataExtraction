@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using PDFDataExtraction.Configuration;
@@ -11,9 +6,6 @@ using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PDF2Txt.Models;
-using PDFDataExtraction.PDFToText.Models;
-using Line = PDFDataExtraction.Generic.Line;
-using Page = PDFDataExtraction.Generic.Page;
 
 namespace PDFDataExtraction.PDF2Txt
 {
