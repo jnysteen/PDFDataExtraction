@@ -1,5 +1,7 @@
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.GhostScript;
+using PDFDataExtraction.PdfImageConversion;
+
 // ReSharper disable InconsistentNaming
 
 namespace PDFDataExtraction.WebAPI.Models

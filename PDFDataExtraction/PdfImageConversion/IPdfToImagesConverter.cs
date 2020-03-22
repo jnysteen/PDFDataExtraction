@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using PDFDataExtraction.PdfImageConversion;
 
 namespace PDFDataExtraction.GhostScript
 {

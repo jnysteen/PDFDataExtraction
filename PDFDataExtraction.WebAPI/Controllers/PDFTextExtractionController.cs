@@ -13,6 +13,7 @@ using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
+using PDFDataExtraction.PdfImageConversion;
 using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
 
@@ -52,7 +53,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         {
             var result = new PDFTextExtractionResult();
             
-            Func<string, DocElementConstructionConfiguration, Task<Document>> extractor = _pdfTextExtractor.ExtractTextFromPDF;
+            Func<string, DocElementConstructionConfiguration, PageAsImage[], Task<Document>> extractor = (s, configuration, pagesAsImages) => _pdfTextExtractor.ExtractTextFromPDF(s, configuration, pagesAsImages);
 
             var conf = new DocElementConstructionConfiguration();
             
@@ -96,7 +97,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             
             try
             {
-                var extractionResult = await ProcessFile(file, conf, _pdfTextExtractor.ExtractTextFromPDF, null);
+                var extractionResult = await ProcessFile(file, conf, (s, configuration, pagesAsImages) => _pdfTextExtractor.ExtractTextFromPDF(s, conf, null) , null);
                 var documentAsString = extractionResult.extractedData.GetAsString();
                 return new OkObjectResult(documentAsString);
             }
@@ -106,7 +107,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
 
-        private static async Task<(T extractedData, PageAsImage[] extractedImages)> ProcessFile<T>(IFormFile file, DocElementConstructionConfiguration config, Func<string, DocElementConstructionConfiguration, Task<T>> dataExtractor, Func<string, Task<PageAsImage[]>> imageConverter)
+        private static async Task<(T extractedData, PageAsImage[] extractedImages)> ProcessFile<T>(IFormFile file, DocElementConstructionConfiguration config, Func<string, DocElementConstructionConfiguration, PageAsImage[], Task<T>> dataExtractor, Func<string, Task<PageAsImage[]>> imageConverter)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilePath = $"./uploaded-files/{fileId}.pdf";
@@ -121,7 +122,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 if(imageConverter != null)
                     convertedImages = await imageConverter(inputFilePath);
 
-                var extractedData = await dataExtractor(inputFilePath, config);
+                var extractedData = await dataExtractor(inputFilePath, config, convertedImages);
                 return (extractedData, convertedImages);
             }
             finally

@@ -1,4 +1,4 @@
-namespace PDFDataExtraction.GhostScript
+namespace PDFDataExtraction.PdfImageConversion
 {
     public class PageAsImage
     {

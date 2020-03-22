@@ -1,11 +1,14 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PDF2Txt.Models;
+using PDFDataExtraction.PdfImageConversion;
 
 namespace PDFDataExtraction.PDF2Txt
 {
@@ -44,11 +47,75 @@ namespace PDFDataExtraction.PDF2Txt
             }
         }
 
-        public async Task<Document> ExtractTextFromPDF(string inputFilePath, DocElementConstructionConfiguration docElementConstructionConfiguration)
+        public async Task<Document> ExtractTextFromPDF(string inputFilePath,
+            DocElementConstructionConfiguration docElementConstructionConfiguration, PageAsImage[] pagesAsImages)
         {
             var extractedXml = await ExtractText(inputFilePath);
             var mapped = PDF2TxtMapper.MapToDocument(extractedXml, docElementConstructionConfiguration);
+            
+            // If there are page images, we have to ensure that the bounding boxes of the document elements correspond to the size of the page they are on
+            if (pagesAsImages != null)
+                NormalizeBoundingBoxes(pagesAsImages, mapped);
+            
             return mapped;
+        }
+
+        private static void NormalizeBoundingBoxes(PageAsImage[] pagesAsImages, Document mapped)
+        {
+            var extractedPages = mapped.Pages;
+
+            if (pagesAsImages.Length != extractedPages.Length)
+                throw new Exception(
+                    $"Data extraction found {extractedPages.Length} pages in the PDF, but {pagesAsImages.Length} images of pages were provided!");
+
+            for (var i = 0; i < pagesAsImages.Length; i++)
+            {
+                var pageAsImage = pagesAsImages[i];
+                var extractedPage = extractedPages[i];
+
+                var heightNormalizationFactor = pageAsImage.ImageHeight / extractedPage.Height;
+                var widthNormalizationFactor = pageAsImage.ImageWidth / extractedPage.Width;
+
+                extractedPage.Height *= heightNormalizationFactor;
+                extractedPage.Width *= widthNormalizationFactor;
+
+                foreach (var pageLine in extractedPage.Lines)
+                {
+                    foreach (var word in pageLine.Words)
+                    {
+                        word.BoundingBox = new BoundingBox()
+                        {
+                            BottomRightCorner = new Point()
+                            {
+                                X = word.BoundingBox.BottomRightCorner.X * widthNormalizationFactor, 
+                                Y = word.BoundingBox.BottomRightCorner.Y * heightNormalizationFactor
+                            },
+                            TopLeftCorner = new Point()
+                            {
+                                X = word.BoundingBox.TopLeftCorner.X * widthNormalizationFactor,
+                                Y = word.BoundingBox.TopLeftCorner.Y * heightNormalizationFactor
+                            },
+                        };
+                        
+                        foreach (var wordCharacter in word.Characters)
+                        {
+                            wordCharacter.BoundingBox = new BoundingBox()
+                            {
+                                BottomRightCorner = new Point()
+                                {
+                                    X = wordCharacter.BoundingBox.BottomRightCorner.X * widthNormalizationFactor, 
+                                    Y = wordCharacter.BoundingBox.BottomRightCorner.Y * heightNormalizationFactor
+                                },
+                                TopLeftCorner = new Point()
+                                {
+                                    X = wordCharacter.BoundingBox.TopLeftCorner.X * widthNormalizationFactor,
+                                    Y = wordCharacter.BoundingBox.TopLeftCorner.Y * heightNormalizationFactor
+                                },
+                            };
+                        }
+                    }
+                }
+            }
         }
     }
 }

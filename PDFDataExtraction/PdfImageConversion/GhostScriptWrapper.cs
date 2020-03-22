@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Helpers;
+using PDFDataExtraction.PdfImageConversion;
 
 namespace PDFDataExtraction.GhostScript
 {

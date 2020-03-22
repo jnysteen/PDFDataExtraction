@@ -55,7 +55,5 @@ namespace PDFDataExtraction.Tests.PDF2Txt
            // The coordinate systems of the bounding boxes are local for each page 
            DocumentChecker.CheckBoundingBoxesPositioning(producedDocument);
         }
-
-
     }
 }
