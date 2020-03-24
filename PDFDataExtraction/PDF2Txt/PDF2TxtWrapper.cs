@@ -76,8 +76,8 @@ namespace PDFDataExtraction.PDF2Txt
                 var heightNormalizationFactor = pageAsImage.ImageHeight / extractedPage.Height;
                 var widthNormalizationFactor = pageAsImage.ImageWidth / extractedPage.Width;
 
-                extractedPage.Height *= heightNormalizationFactor;
-                extractedPage.Width *= widthNormalizationFactor;
+                extractedPage.Height = Math.Round(extractedPage.Height * heightNormalizationFactor, 2);
+                extractedPage.Width = Math.Round(extractedPage.Width* widthNormalizationFactor, 2);
 
                 foreach (var pageLine in extractedPage.Lines)
                 {
@@ -87,13 +87,13 @@ namespace PDFDataExtraction.PDF2Txt
                         {
                             BottomRightCorner = new Point()
                             {
-                                X = word.BoundingBox.BottomRightCorner.X * widthNormalizationFactor, 
-                                Y = word.BoundingBox.BottomRightCorner.Y * heightNormalizationFactor
+                                X = Math.Round(word.BoundingBox.BottomRightCorner.X * widthNormalizationFactor, 2), 
+                                Y = Math.Round(word.BoundingBox.BottomRightCorner.Y * heightNormalizationFactor, 2)
                             },
                             TopLeftCorner = new Point()
                             {
-                                X = word.BoundingBox.TopLeftCorner.X * widthNormalizationFactor,
-                                Y = word.BoundingBox.TopLeftCorner.Y * heightNormalizationFactor
+                                X = Math.Round(word.BoundingBox.TopLeftCorner.X * widthNormalizationFactor, 2),
+                                Y = Math.Round(word.BoundingBox.TopLeftCorner.Y * heightNormalizationFactor, 2)
                             },
                         };
                         
@@ -103,13 +103,13 @@ namespace PDFDataExtraction.PDF2Txt
                             {
                                 BottomRightCorner = new Point()
                                 {
-                                    X = wordCharacter.BoundingBox.BottomRightCorner.X * widthNormalizationFactor, 
-                                    Y = wordCharacter.BoundingBox.BottomRightCorner.Y * heightNormalizationFactor
+                                    X = Math.Round(wordCharacter.BoundingBox.BottomRightCorner.X * widthNormalizationFactor, 2), 
+                                    Y = Math.Round(wordCharacter.BoundingBox.BottomRightCorner.Y * heightNormalizationFactor, 2)
                                 },
                                 TopLeftCorner = new Point()
                                 {
-                                    X = wordCharacter.BoundingBox.TopLeftCorner.X * widthNormalizationFactor,
-                                    Y = wordCharacter.BoundingBox.TopLeftCorner.Y * heightNormalizationFactor
+                                    X = Math.Round(wordCharacter.BoundingBox.TopLeftCorner.X * widthNormalizationFactor, 2),
+                                    Y = Math.Round(wordCharacter.BoundingBox.TopLeftCorner.Y * heightNormalizationFactor, 2)
                                 },
                             };
                         }

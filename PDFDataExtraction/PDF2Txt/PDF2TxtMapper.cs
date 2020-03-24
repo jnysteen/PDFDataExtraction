@@ -102,10 +102,10 @@ namespace PDFDataExtraction.PDF2Txt
                 throw new PDFTextExtractionException(
                     $"Too few or too many coordinates for a bounding box encountered!");
 
-            var topLeftX = double.Parse(splitOnComma[0]);
-            var topLeftY = double.Parse(splitOnComma[1]);
-            var bottomRightX = double.Parse(splitOnComma[2]);
-            var bottomRightY = double.Parse(splitOnComma[3]);
+            var topLeftX = Math.Round(double.Parse(splitOnComma[0]), 2);
+            var topLeftY = Math.Round(double.Parse(splitOnComma[1]), 2);
+            var bottomRightX = Math.Round(double.Parse(splitOnComma[2]), 2);
+            var bottomRightY = Math.Round(double.Parse(splitOnComma[3]), 2);
 
             // Flip the Y-coordinates to get the points into the right coordinate system (where the Y-axis points downwards)
             if (pageHeight.HasValue)

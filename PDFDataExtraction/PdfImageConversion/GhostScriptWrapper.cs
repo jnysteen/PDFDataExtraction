@@ -26,7 +26,7 @@ namespace PDFDataExtraction.GhostScript
             try
             {
                 var applicationName = "gs";
-                var args = $"-sDEVICE=png256 -o {Path.Combine(tempWorkingFolder, "%03d.png")} -r500 {inputFilePath}";
+                var args = $"-dTextAlphaBits=4 -dGraphicsAlphaBits=4 -r300 -sDEVICE=png16m -o {Path.Combine(tempWorkingFolder, "%03d.png")} {inputFilePath}";
 
                 var (statusCode, stdOutput) = await CmdLineHelper.Run(applicationName, args);
 

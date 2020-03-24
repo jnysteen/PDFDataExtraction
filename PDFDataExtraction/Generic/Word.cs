@@ -1,14 +1,14 @@
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PDFDataExtraction.Generic
 {
     public class Word
     {
-        [JsonProperty("bbox")]
+        [JsonPropertyName("bbox")]
         public BoundingBox BoundingBox { get; set; } 
         
-        [JsonProperty("chars")]
+        [JsonPropertyName("chars")]
         public Character[] Characters { get; set; }
 
         public string Text => string.Join("", Characters.Select(c => c.Text));

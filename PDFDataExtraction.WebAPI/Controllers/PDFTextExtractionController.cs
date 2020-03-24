@@ -1,15 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using JNysteen.FileTypeIdentifier.Interfaces;
-using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using PDFDataExtraction.Configuration;
-using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
@@ -86,7 +80,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(500, Type = typeof(string))]
         [Produces("application/json")]
-        public async Task<IActionResult> SimpleExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
+        public async Task<ActionResult<string>> SimpleExtraction(IFormFile file, [FromQuery] int? wordDiff, [FromQuery] double? whiteSpaceFactor)
         {
             var conf = new DocElementConstructionConfiguration();
             
@@ -99,7 +93,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             {
                 var extractionResult = await ProcessFile(file, conf, (s, configuration, pagesAsImages) => _pdfTextExtractor.ExtractTextFromPDF(s, conf, null) , null);
                 var documentAsString = extractionResult.extractedData.GetAsString();
-                return new OkObjectResult(documentAsString);
+                return documentAsString;
             }
             catch (Exception e)
             {
@@ -110,7 +104,12 @@ namespace PDFDataExtraction.WebAPI.Controllers
         private static async Task<(T extractedData, PageAsImage[] extractedImages)> ProcessFile<T>(IFormFile file, DocElementConstructionConfiguration config, Func<string, DocElementConstructionConfiguration, PageAsImage[], Task<T>> dataExtractor, Func<string, Task<PageAsImage[]>> imageConverter)
         {                
             var fileId = Guid.NewGuid().ToString();
-            var inputFilePath = $"./uploaded-files/{fileId}.pdf";
+            var inputFilesDir = Path.Combine(Directory.GetCurrentDirectory(), $"uploaded-files/");
+
+            if (!Directory.Exists(inputFilesDir))
+                Directory.CreateDirectory(inputFilesDir);
+            
+            var inputFilePath = Path.Combine(inputFilesDir, $"{fileId}.pdf");
 
             try
             {

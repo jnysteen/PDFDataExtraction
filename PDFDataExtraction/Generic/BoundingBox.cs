@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PDFDataExtraction.Generic
 {
@@ -10,16 +10,16 @@ namespace PDFDataExtraction.Generic
         /// <summary>
         ///     The top left corner of the box
         /// </summary>
-        [JsonProperty("topLeft")]
+        [JsonPropertyName("topLeft")]
         public Point TopLeftCorner { get; set; }
 
         /// <summary>
         ///     The bottom right corner of the box
         /// </summary>
-        [JsonProperty("bottomRight")]
+        [JsonPropertyName("bottomRight")]
         public Point BottomRightCorner { get; set; }
 
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public double Height => BottomRightCorner.Y - TopLeftCorner.Y;
         [JsonIgnore]
         public double Width => BottomRightCorner.X - TopLeftCorner.X;

@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace PDFDataExtraction.Generic
 {
@@ -7,7 +7,7 @@ namespace PDFDataExtraction.Generic
         /// <summary>
         ///     A box that fits the character
         /// </summary>
-        [JsonProperty("bbox")] 
+        [JsonPropertyName("bbox")] 
         public BoundingBox BoundingBox { get; set; }
 
         /// <summary>
