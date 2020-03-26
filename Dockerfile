@@ -20,7 +20,7 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS runtime
 
 # install System.Drawing native dependencies
 RUN apt-get update \
-    && apt-get install -y --allow-unauthenticated \
+    && apt-get install -y --allow-unauthenticated --no-install-recommends \
         libc6-dev \ 
         libgdiplus \
         libx11-dev \
