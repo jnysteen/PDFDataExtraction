@@ -4,6 +4,5 @@ namespace PDFDataExtraction.Configuration
     {
         public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 10;
         public double WhiteSpaceSizeAsAFactorOfMedianCharacterWidth { get; set; } = 0.2;
-
     }
 }

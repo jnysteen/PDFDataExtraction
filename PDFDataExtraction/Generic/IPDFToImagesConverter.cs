@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
 using PDFDataExtraction.PdfImageConversion;
+// ReSharper disable InconsistentNaming
 
-namespace PDFDataExtraction.GhostScript
+namespace PDFDataExtraction.Generic
 {
-    public interface IPdfToImagesConverter
+    public interface IPDFToImagesConverter
     {
-        Task<PageAsImage[]> ConvertPdfToPngs(string inputFilePath);
+        Task<PageAsImage[]> ConvertPDFToPNGs(string inputFilePath);
     }
 }

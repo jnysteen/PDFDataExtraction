@@ -26,35 +26,45 @@ namespace PDFDataExtraction.PDF2Txt
 
             Func<IEnumerable<Character>, Word> wordCreator = GetWordFromCharacters;
 
-            foreach (var page in pages.Page)
+            var currentLineNumber = 1;
+
+            for (var pageIndex = 0; pageIndex < pages.Page.Count; pageIndex++)
             {
+                var page = pages.Page[pageIndex];
                 var pageBoundingBox = GetBoundingBoxFromString(page.Bbox);
-                
+
+                var pageNumber = pageIndex + 1;
                 var outputPage = new Generic.Page()
                 {
                     Width = pageBoundingBox.Width,
                     Height = pageBoundingBox.Height,
+                    PageNumber = pageIndex + 1
                 };
-                
+
                 var allWordsOnPage = new List<Word>();
 
                 foreach (var textBox in page.Textbox)
                 {
-                    foreach (var textline in textBox.Textlines)
+                    foreach (var textLine in textBox.Textlines)
                     {
-                        var nonEmptyTextParts = textline.TextParts.Where(t => !string.IsNullOrEmpty(t.Text));
-                        var textPartsAsCharacters = nonEmptyTextParts.Select(t => GetCharacterFromTextNode(t, outputPage));
-                        
-                        var wordsInLine = Grouper.GroupByCondition(textPartsAsCharacters, (thisCharacter, theCharacterAfterThisCharacter) => CharactersToWordGroupingCondition(thisCharacter, theCharacterAfterThisCharacter, whitespaceSize), wordCreator);
+                        var nonEmptyTextParts = textLine.TextParts.Where(t => !string.IsNullOrEmpty(t.Text));
+                        var textPartsAsCharacters =
+                            nonEmptyTextParts.Select(t => GetCharacterFromTextNode(t, outputPage));
+
+                        var wordsInLine = Grouper.GroupByCondition(textPartsAsCharacters,
+                            (thisCharacter, theCharacterAfterThisCharacter) =>
+                                CharactersToWordGroupingCondition(thisCharacter, theCharacterAfterThisCharacter,
+                                    whitespaceSize), wordCreator);
 
                         allWordsOnPage.AddRange(wordsInLine);
                     }
                 }
 
-                var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
-                var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration);
+                var wordsInReadingOrder =
+                    allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
+                var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, pageNumber, ref currentLineNumber);
 
-                outputPage.Lines = createdLines.ToArray();
+                outputPage.Lines = createdLines;
 
                 outputPages.Add(outputPage);
             }
@@ -68,12 +78,21 @@ namespace PDFDataExtraction.PDF2Txt
             };
         }
         
-        private static Line[] ConstructLinesFromWords(IEnumerable<Word> wordsInReadingOrder, DocElementConstructionConfiguration docElementConstructionConfiguration)
+        private static Line[] ConstructLinesFromWords(IEnumerable<Word> wordsInReadingOrder,
+            DocElementConstructionConfiguration docElementConstructionConfiguration, int pageNumber, ref int currentDocumentLineNumber)
         {
             var maxPixelDifferenceInWordsInTheSameLine = docElementConstructionConfiguration.MaxPixelDifferenceInWordsInTheSameLine;
-            var constructedLines = Grouper.GroupByCondition(wordsInReadingOrder, (thisWord, thatWord) => WordsToLinesGroupingCondition(thisWord, thatWord, maxPixelDifferenceInWordsInTheSameLine), WordsToLinesGroupCreator);
+            var constructedLines = 
+                Grouper.GroupByCondition(wordsInReadingOrder, 
+                    (thisWord, thatWord) => WordsToLinesGroupingCondition(thisWord, thatWord, maxPixelDifferenceInWordsInTheSameLine), WordsToLinesGroupCreator)
+                    .ToArray();
 
-            return constructedLines.ToArray();
+            for (var lineIndex = 0; lineIndex < constructedLines.Length; lineIndex++)
+            {
+                constructedLines[lineIndex].LineNumberInDocument = currentDocumentLineNumber++;
+                constructedLines[lineIndex].LineNumberInPage = lineIndex+1;
+            }
+            return constructedLines;
         }
 
         private static bool CharactersToWordGroupingCondition(Character thisCharacter, Character theCharacterAfterThisCharacter, double whitespaceSize)

@@ -13,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\PDFDataExtraction.WebAPI.Old\PDFDataExtraction.WebAPI.Old.csproj" />
       <ProjectReference Include="..\PDFDataExtraction.WebAPI\PDFDataExtraction.WebAPI.csproj" />
       <ProjectReference Include="..\PDFDataExtraction\PDFDataExtraction.csproj" />
     </ItemGroup>

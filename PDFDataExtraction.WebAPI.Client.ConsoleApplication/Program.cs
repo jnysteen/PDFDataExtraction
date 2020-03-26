@@ -57,7 +57,7 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 
                     foreach (var pagesAsPnG in extractedDocument.PagesAsPNGs)
                     {
-                        var bytes = System.Convert.FromBase64String(pagesAsPnG.Base64EncodedContents);
+                        var bytes = pagesAsPnG.Contents;
                         var fileName = $"{outputImageFileBase}-{pagesAsPnG.PageNumber}.png";
                         File.WriteAllBytes(fileName, bytes);
                     }

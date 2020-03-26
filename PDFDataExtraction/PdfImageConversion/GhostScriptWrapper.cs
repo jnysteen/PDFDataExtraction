@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PDFDataExtraction.Exceptions;
+using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PdfImageConversion;
 
 namespace PDFDataExtraction.GhostScript
 {
-    public class GhostScriptWrapper : IPdfToImagesConverter
+    public class GhostScriptWrapper : IPDFToImagesConverter
     {
         private readonly ILogger<GhostScriptWrapper> _logger;
 
@@ -19,7 +20,7 @@ namespace PDFDataExtraction.GhostScript
             _logger = logger;
         }
         
-        public async Task<PageAsImage[]> ConvertPdfToPngs(string inputFilePath)
+        public async Task<PageAsImage[]> ConvertPDFToPNGs(string inputFilePath)
         {
             var tempWorkingFolder = CreateTemporaryDirectory();
 
@@ -44,16 +45,16 @@ namespace PDFDataExtraction.GhostScript
                     int imageHeight = 0;
                     int imageWidth = 0;
 
-                    using (var ms = new MemoryStream(imageBytes))
-                    using (var image = Image.FromStream(ms))
+                    await using (var ms = new MemoryStream(imageBytes))
                     {
+                        using var image = Image.FromStream(ms);
                         imageHeight = image.Height;
                         imageWidth = image.Width;
                     }
 
                     extractedImages[i] = new PageAsImage()
                     {
-                        Base64EncodedContents = Convert.ToBase64String(imageBytes),
+                        Contents = imageBytes,
                         PageNumber = i + 1,
                         ImageHeight = imageHeight,
                         ImageWidth = imageWidth

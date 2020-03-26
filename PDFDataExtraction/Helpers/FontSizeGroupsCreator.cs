@@ -30,7 +30,5 @@ namespace PDFDataExtraction.Helpers
 
             return Math.Abs(thisHeight - thatHeight) <= maxHeightDiff;
         }
-        
-        
     }
 }

@@ -12,13 +12,26 @@ using PDFDataExtraction.PdfImageConversion;
 
 namespace PDFDataExtraction.PDF2Txt
 {
-    public class PDF2TxtWrapper : IPDF2TxtWrapper
+    public class PDF2TxtWrapper : IPDFTextExtractor
     {
         private readonly XmlSerializer _xmlSerializer;
 
         public PDF2TxtWrapper()
         {
             _xmlSerializer = new XmlSerializer(typeof(Pages));
+        }
+        
+        public async Task<Document> ExtractTextFromPDF(string inputFilePath,
+            DocElementConstructionConfiguration docElementConstructionConfiguration, PageAsImage[] pagesAsImages)
+        {
+            var extractedXml = await ExtractText(inputFilePath);
+            var mapped = PDF2TxtMapper.MapToDocument(extractedXml, docElementConstructionConfiguration);
+            
+            // If there are page images, we have to ensure that the bounding boxes of the document elements correspond to the size of the page they are on
+            if (pagesAsImages != null)
+                NormalizeBoundingBoxes(pagesAsImages, mapped);
+            
+            return mapped;
         }
 
         private async Task<Pages> ExtractText(string inputFilePath)
@@ -39,25 +52,10 @@ namespace PDFDataExtraction.PDF2Txt
             var invalidChar = (char) 0x00; 
             var invalidCharAsString = invalidChar.ToString();
             stdOutput = stdOutput.Replace(invalidCharAsString, "");
-            
-            using (var reader = new StringReader(stdOutput))
-            {
-                var deserializedDoc = (Pages) _xmlSerializer.Deserialize(reader);
-                return deserializedDoc;
-            }
-        }
 
-        public async Task<Document> ExtractTextFromPDF(string inputFilePath,
-            DocElementConstructionConfiguration docElementConstructionConfiguration, PageAsImage[] pagesAsImages)
-        {
-            var extractedXml = await ExtractText(inputFilePath);
-            var mapped = PDF2TxtMapper.MapToDocument(extractedXml, docElementConstructionConfiguration);
-            
-            // If there are page images, we have to ensure that the bounding boxes of the document elements correspond to the size of the page they are on
-            if (pagesAsImages != null)
-                NormalizeBoundingBoxes(pagesAsImages, mapped);
-            
-            return mapped;
+            using var reader = new StringReader(stdOutput);
+            var deserializedDoc = (Pages) _xmlSerializer.Deserialize(reader);
+            return deserializedDoc;
         }
 
         private static void NormalizeBoundingBoxes(PageAsImage[] pagesAsImages, Document mapped)

@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using PDFDataExtraction.Generic;
 using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.WebAPI.Extensions;
@@ -35,7 +36,10 @@ namespace PDFDataExtraction.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging();
+            services.AddLogging(loggingBuilder =>
+            {
+                
+            });
             services.AddControllers();
 
             services.ConfigureSwaggerGen();
@@ -48,21 +52,25 @@ namespace PDFDataExtraction.WebAPI
             services.AddResponseCompression(options =>
             {
                 options.MimeTypes = new[] { "application/json" };
-                //                options.EnableForHttps = true;
+                options.EnableForHttps = true;
                 options.Providers.Add<GzipCompressionProvider>();
             });
 
+            services.AddSingleton<IFileTypeIdentifier>(_ => CreateFileTypeIdentifier());
+            services.AddSingleton<IPDFMetadataProvider, PDFMetadataProvider>();
+
+            services.AddScoped<IPDFTextExtractor, PDF2TxtWrapper>();
+            services.AddScoped<IPDFToImagesConverter, GhostScriptWrapper>();
+
+            services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
+        }
+
+        private static FileTypeIdentifier CreateFileTypeIdentifier()
+        {
             var magicNumbers = new MagicNumberMapping();
             magicNumbers.AddMagicNumbers(DocumentMagicNumbers.PDFMagicNumbers, DocumentMagicNumbers.PDF);
             var fileTypeIdentifier = new FileTypeIdentifier(magicNumbers);
-            services.AddSingleton<IFileTypeIdentifier>(fileTypeIdentifier);
-
-            var pdf2TextWrapper = new PDF2TxtWrapper();
-            services.AddSingleton<IPDF2TxtWrapper>(pdf2TextWrapper);
-
-            services.AddScoped<IPdfToImagesConverter, GhostScriptWrapper>();
-
-            services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
+            return fileTypeIdentifier;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

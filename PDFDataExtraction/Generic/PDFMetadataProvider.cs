@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PDFDataExtraction.Generic
 {
-    public class PDFMetadataProvider : IMetadataProvider
+    public class PDFMetadataProvider : IPDFMetadataProvider
     {
         public string GetFileMd5(string filePath)
         {

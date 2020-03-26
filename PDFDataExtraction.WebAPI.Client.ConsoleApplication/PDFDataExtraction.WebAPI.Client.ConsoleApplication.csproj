@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PDFDataExtraction.WebAPI.Client\PDFDataExtraction.WebAPI.Client.csproj" />
-      <ProjectReference Include="..\PDFDataExtraction.WebAPI.Old\PDFDataExtraction.WebAPI.Old.csproj" />
     </ItemGroup>
 
 </Project>
