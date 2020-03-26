@@ -10,14 +10,19 @@ namespace PDFDataExtraction.Generic
         public Line[] Lines { get; set; }
 
         /// <summary>
-        ///     The width of the page in //TODO WHAT UNIT?
+        ///     The width of the page
         /// </summary>
         public double Width { get; set; }
 
         /// <summary>
-        ///     The height of the page in //TODO WHAT UNIT?
+        ///     The height of the page
         /// </summary>
         public double Height { get; set; }
+
+        /// <summary>
+        ///     The number of the page in the document (starting from 1)
+        /// </summary>
+        public int PageNumber { get; set; }
         
         public override string ToString()
         {
