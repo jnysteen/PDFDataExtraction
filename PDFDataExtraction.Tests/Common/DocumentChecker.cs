@@ -30,7 +30,7 @@ namespace PDFDataExtraction.Tests.Common
             }
         }
 
-        internal static string LineToString(Generic.Line line)
+        internal static string LineToString(Line line)
         {
             return string.Join(' ', line.Words.Select(w => w.Text));
         }

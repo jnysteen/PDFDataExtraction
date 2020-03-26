@@ -1,4 +1,6 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine AS build
+# Could probably build a much smaller image by following this: https://coderbook.com/@marcus/how-to-optimize-docker-images-for-smaller-size-and-speed/
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
@@ -14,35 +16,31 @@ COPY PDFDataExtraction/. ./PDFDataExtraction/
 WORKDIR /app/PDFDataExtraction.WebAPI
 RUN dotnet publish -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS runtime
 
 # install System.Drawing native dependencies
-RUN apk add \
-        --no-cache \
-        --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
-        libgdiplus
+RUN apt-get update \
+    && apt-get install -y --allow-unauthenticated \
+        libc6-dev \ 
+        libgdiplus \
+        libx11-dev \
+        python3 \
+        python3-pip \
+        ghostscript \
+        && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install gcc and other tools needed for pdf2text
-RUN apk add build-base
-
-# Install pdftotext
-RUN apk add --no-cache poppler-utils 
-
-# Install pdf2text (Text extraction with Python)
 ENV PYTHONUNBUFFERED=1
-RUN echo "**** install Python ****" && \
-    apk add --no-cache python3 && \
+RUN echo "**** setup Python ****" && \    
     if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
-    \
-    echo "**** install pip ****" && \
-    python3 -m ensurepip && \
-    rm -r /usr/lib/python*/ensurepip && \
-    pip3 install --no-cache --upgrade pip setuptools wheel && \
+    echo "**** setup pip ****" && \
+    pip3 install --upgrade pip setuptools wheel && \
     if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi
-RUN pip3 install pdfminer
 
-# Install GhostScript
-RUN apk add ghostscript
+# Install pdf2text (Text extraction with Python) AND pikepdf (PDF meta data extraction)
+RUN pip3 install pdfminer && pip3 install pikepdf
+
+RUN apt-get clean
 
 WORKDIR /app
 COPY --from=build /app/PDFDataExtraction.WebAPI/out ./

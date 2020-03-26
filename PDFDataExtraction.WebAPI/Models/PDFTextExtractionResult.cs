@@ -22,6 +22,11 @@ namespace PDFDataExtraction.WebAPI.Models
         ///     Metadata about the provided PDF file
         /// </summary>
         public PDFFileMetadata FileMetaData { get; set; }
+
+        /// <summary>
+        ///     Metadata embedded in the provided PDF file
+        /// </summary>
+        public PDFEmbeddedMetadata PDFEmbeddedMetadata { get; set; }
         
         /// <summary>
         ///     `true`, if the extraction was successful - `false` if it failed 

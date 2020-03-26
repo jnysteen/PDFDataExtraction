@@ -11,9 +11,8 @@ def main():
     res = {}
     for attr, value in docinfo.items():
       res[attr] = str(value)
-    with open('result.json', 'w') as fp:
-      # json.dump(res, fp)
-      print(json.dumps(res))
+    
+    print(json.dumps(res))
   
 if __name__== "__main__":
   main()

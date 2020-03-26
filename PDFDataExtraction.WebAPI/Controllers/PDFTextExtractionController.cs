@@ -122,6 +122,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                     convertedImages = await _ipdfToImagesConverter.ConvertPDFToPNGs(inputFilePath);
 
                 var extractedData = await _pdfTextExtractor.ExtractTextFromPDF(inputFilePath, config, convertedImages);
+                var embeddedMetaData = await _ipdfMetadataProvider.GetPDFMetadata(inputFilePath);
                 var fileMd5 = _ipdfMetadataProvider.GetFileMd5(inputFilePath);
                 var textMd5 = _ipdfMetadataProvider.GetDocumentTextMd5(extractedData);
 
@@ -132,8 +133,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
                     {
                         FileMd5 = fileMd5,
                         FileName = file.FileName ?? file.Name,
-                        TextMd5 = textMd5
-                    }
+                        TextMd5 = textMd5,
+                    },
+                    PDFEmbeddedMetadata = embeddedMetaData
                 };
             }
             finally
