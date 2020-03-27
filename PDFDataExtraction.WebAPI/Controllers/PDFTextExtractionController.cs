@@ -154,14 +154,14 @@ namespace PDFDataExtraction.WebAPI.Controllers
         public class ExtractionParameters
         {
             /// <summary>
-            ///     TODO write docs for WordDiff. Default is 10
-            ///     The amount of pixels
+            ///     Roughly the amount of pixels difference in the Y coordinates that is allowed for words on the same line. The default value is 10
             /// </summary>
             [FromQuery(Name = "wordLineDiff")]
             public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 10;
                 
             /// <summary>
-            ///     TODO write docs for WhiteSpaceFactor. Default is 0.2
+            ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.
+            ///    The default value is 0.2
             /// </summary>
             [FromQuery(Name = "whiteSpaceFactor")]
             public double WhiteSpaceSizeAsAFactorOfMedianCharacterWidth { get; set; } = 0.2;
