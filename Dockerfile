@@ -38,9 +38,10 @@ RUN echo "**** setup Python ****" && \
     if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi
 
 # Install pdf2text (Text extraction with Python) AND pikepdf (PDF meta data extraction)
-RUN pip3 install pdfminer && pip3 install pikepdf
+RUN pip3 install pdfminer && \ 
+    pip3 install pikepdf
 
-RUN apt-get clean
+RUN apt-get remove -y python3-pip && apt-get clean
 
 WORKDIR /app
 COPY --from=build /app/PDFDataExtraction.WebAPI/out ./
