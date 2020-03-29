@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PdfDataExtraction;
+using PdfDataExtraction.WebAPI.Client;
 
 namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 {
@@ -50,8 +51,10 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                 using var ms = new MemoryStream(t);
                 {
                     Console.WriteLine("Sending request to API now...");
+                    
+                    var fileParameter = new FileParameter(ms);
 
-                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(null, null, true, ms);
+                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(true, null, null, fileParameter);
 
                     var extractedTextSimple = GetAsString(extractedDocument.ExtractedData);
                     Console.WriteLine(extractedTextSimple);
