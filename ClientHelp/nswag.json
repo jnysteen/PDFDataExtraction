@@ -11,7 +11,7 @@
     "openApiToCSharpClient": {
       "className": "PdfDataExtractionClient",
       "output": "PdfDataExtractionClient.cs",
-      "namespace": "PdfDataExtraction"
+      "namespace": "PdfDataExtraction.WebAPI.Client"
     }
   }
 }
