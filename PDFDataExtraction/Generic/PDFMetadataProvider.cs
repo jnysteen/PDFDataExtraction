@@ -94,7 +94,7 @@ namespace PDFDataExtraction.Generic
 
             try
             {
-                var dateTimeOffsetRegex = new Regex(@"^D:(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hours>\d{2})(?<Minutes>\d{2})(?<Seconds>\d{2})(?<TimeZone>(Z|((?<TimeZoneSign>(\+|\-))(?<TimeZoneHours>\d{2})\'(?<TimeZoneMinutes>\d{2})\')))$", RegexOptions.ExplicitCapture);
+                var dateTimeOffsetRegex = new Regex(@"^D:(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hours>\d{2})(?<Minutes>\d{2})(?<Seconds>\d{2})(?<TimeZone>Z?(((?<TimeZoneSign>(\+|\-)?)(?<TimeZoneHours>\d{2})\'(?<TimeZoneMinutes>\d{2})\'))?)", RegexOptions.ExplicitCapture);
 
                 var match = dateTimeOffsetRegex.Match(datetimeoffsetRaw);
 
@@ -112,7 +112,7 @@ namespace PDFDataExtraction.Generic
 
                 var offset = TimeSpan.Zero;
                 
-                if (timeZone.Value == "Z") 
+                if (timeZone.Value.StartsWith("Z")) 
                     return new DateTimeOffset(year, month, day, hours, minutes, seconds, offset);
                 
                 var timeZoneSign = match.Groups["TimeZoneSign"].Value;

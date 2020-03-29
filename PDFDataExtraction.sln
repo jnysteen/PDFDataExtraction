@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.WebAPI.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.WebAPI", "PDFDataExtraction.WebAPI\PDFDataExtraction.WebAPI.csproj", "{9FE5EF25-BDFD-4C1F-AB63-9669D0AB0A87}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.Viewer", "PDFDataExtraction.Viewer\PDFDataExtraction.Viewer.csproj", "{042C5388-9AF1-4B86-95FF-EA618EB5664E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{9FE5EF25-BDFD-4C1F-AB63-9669D0AB0A87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FE5EF25-BDFD-4C1F-AB63-9669D0AB0A87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FE5EF25-BDFD-4C1F-AB63-9669D0AB0A87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

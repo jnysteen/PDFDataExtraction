@@ -2,8 +2,8 @@
   "runtime": "NetCore21",
   "documentGenerator": {
     "fromDocument": {
-      "json": "swagger.json",
-      "url": null,
+      "json": null,
+      "url": "http://localhost:4000/swagger/v1/swagger.json",
       "output": null
     }
   },
@@ -11,7 +11,7 @@
     "openApiToCSharpClient": {
       "className": "PdfDataExtractionClient",
       "output": "PdfDataExtractionClient.cs",
-      "namespace": "Verum.Extraction.PDFTextExtraction"
+      "namespace": "PdfDataExtraction"
     }
   }
 }

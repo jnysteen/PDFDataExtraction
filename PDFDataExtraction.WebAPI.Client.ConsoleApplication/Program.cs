@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using PdfDataExtraction;
 
 namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 {
@@ -9,8 +12,9 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
     {
         static async Task Main(string[] args)
         {
-            var apiEndpoint = "http://localhost:6000";
-            var pdfExtractionClient = new PDFDataExtractionClient(apiEndpoint);
+            var apiEndpoint = "http://localhost:4000";
+            using var httpClient = new HttpClient();
+            var pdfExtractionClient = new PdfDataExtractionClient(apiEndpoint, httpClient);
 
             while (true)
             {
@@ -38,14 +42,18 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                 var outputFilePath = $"{outputBase}-extracted-data.json";
                 var outputFilePathSimple = $"{outputBase}-extracted-data.simple.txt";
                 var outputImageFileBase = $"{outputBase}-extracted-data";
+                
+                
 
-                using (var inputFileStream = File.OpenRead(formattedInputFilePath))
+                // await using (var inputFileStream = File.Open(formattedInputFilePath, FileMode.Open))
+                var t = File.ReadAllBytes(formattedInputFilePath);
+                using var ms = new MemoryStream(t);
                 {
                     Console.WriteLine("Sending request to API now...");
 
-                    var extractedDocument = await pdfExtractionClient.ExtractDocumentFromPDF(inputFileStream);
+                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(null, null, true, ms);
 
-                    var extractedTextSimple = extractedDocument.ExtractedData.GetAsString();
+                    var extractedTextSimple = GetAsString(extractedDocument.ExtractedData);
                     Console.WriteLine(extractedTextSimple);
 
                     var extractedText = JsonConvert.SerializeObject(extractedDocument, Formatting.Indented);
@@ -55,14 +63,37 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                     File.WriteAllText(outputFilePath, extractedText);
                     File.WriteAllText(outputFilePathSimple, extractedTextSimple);
 
-                    foreach (var pagesAsPnG in extractedDocument.PagesAsPNGs)
+                    if (extractedDocument.PagesAsPNGs != null)
                     {
-                        var bytes = pagesAsPnG.Contents;
-                        var fileName = $"{outputImageFileBase}-{pagesAsPnG.PageNumber}.png";
-                        File.WriteAllBytes(fileName, bytes);
+                        foreach (var pagesAsPnG in extractedDocument.PagesAsPNGs)
+                        {
+                            var bytes = pagesAsPnG.Contents;
+                            var fileName = $"{outputImageFileBase}-{pagesAsPnG.PageNumber}.png";
+                            File.WriteAllBytes(fileName, bytes);
+                        }
                     }
                 }
             }
+        }
+
+        public static string GetAsString(Document document)
+        {
+            return string.Join("\n", document.Pages.Select(GetAsString));
+        }
+        
+        public static string GetAsString(Page page)
+        {
+            return string.Join("\n", page.Lines.Select(GetAsString));
+        }
+        
+        public static string GetAsString(Line line)
+        {
+            return string.Join(" ", line.Words.Select(GetAsString));
+        }
+        
+        public static string GetAsString(Word word)
+        {
+            return string.Join("", word.Chars.Select(c => c.Text));
         }
     }
 }

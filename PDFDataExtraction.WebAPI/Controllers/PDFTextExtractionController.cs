@@ -46,15 +46,17 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [HttpPost("detailed", Name = "DetailedTextExtraction")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         [Produces("application/json")]
+        [ProducesResponseType(200, Type = typeof(PDFTextExtractionResult))]
         [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
-        public async Task<ActionResult<PDFTextExtractionResult>> DetailedExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters, [FromQuery] bool? convertPdfToImages)
+        public async Task<ActionResult<PDFTextExtractionResult>> DetailedExtraction([FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
 
             try
             {
-                var extractionResult = await ProcessFile(file, conf, convertPdfToImages ?? false);
+                // var extractionResult = await ProcessFile(extractionParameters.File, conf, extractionParameters.ConvertPdfToImages ?? false);
+                var extractionResult = await ProcessFile(extractionParameters.File, conf, false);
                 return extractionResult;
             }
             catch (Exception e)
@@ -70,8 +72,8 @@ namespace PDFDataExtraction.WebAPI.Controllers
             if (extractionParameters == null)
                 return;
             
-            conf.MaxPixelDifferenceInWordsInTheSameLine = extractionParameters.MaxPixelDifferenceInWordsInTheSameLine;
-            conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
+            // conf.MaxPixelDifferenceInWordsInTheSameLine = extractionParameters.MaxPixelDifferenceInWordsInTheSameLine;
+            // conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
         }
 
         /// <summary>
@@ -82,16 +84,17 @@ namespace PDFDataExtraction.WebAPI.Controllers
         /// <returns>Text from the provided PDF</returns>
         [HttpPost("simple", Name = "SimpleTextExtraction")]
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
+        [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(500, Type = typeof(string))]
         [Produces("application/json")]
-        public async Task<ActionResult<string>> SimpleExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
+        public async Task<ActionResult<string>> SimpleExtraction([FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
             
             try
             {
-                var extractionResult = await ProcessFile(file, conf, false);
+                var extractionResult = await ProcessFile(extractionParameters.File, conf, false);
                 var documentAsString = extractionResult.ExtractedData?.GetAsString();
                 return documentAsString;
             }
@@ -153,18 +156,23 @@ namespace PDFDataExtraction.WebAPI.Controllers
 
         public class ExtractionParameters
         {
-            /// <summary>
-            ///     Roughly the amount of pixels difference in the Y coordinates that is allowed for words on the same line. The default value is 10
-            /// </summary>
-            [FromQuery(Name = "wordLineDiff")]
-            public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 10;
-                
-            /// <summary>
-            ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.
-            ///    The default value is 0.2
-            /// </summary>
-            [FromQuery(Name = "whiteSpaceFactor")]
-            public double WhiteSpaceSizeAsAFactorOfMedianCharacterWidth { get; set; } = 0.2;
+            [FromForm(Name = "file")] public IFormFile File { get; set; }
+            
+            // [FromQuery(Name = "convertPdfToImages")]
+            // public bool? ConvertPdfToImages { get; set; }
+            //
+            // /// <summary>
+            // ///     Roughly the amount of pixels difference in the Y coordinates that is allowed for words on the same line. The default value is 10
+            // /// </summary>
+            // [FromQuery(Name = "wordLineDiff")]
+            // public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 10;
+            //     
+            // /// <summary>
+            // ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.
+            // ///    The default value is 0.2
+            // /// </summary>
+            // [FromQuery(Name = "whiteSpaceFactor")]
+            // public double WhiteSpaceSizeAsAFactorOfMedianCharacterWidth { get; set; } = 0.2;
         }
     }
 }

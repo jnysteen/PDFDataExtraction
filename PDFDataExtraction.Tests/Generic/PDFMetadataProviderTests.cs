@@ -19,6 +19,7 @@ namespace PDFDataExtraction.Tests.Generic
             {
                 new object[] { null, new DateTimeOffset?()},
                 new object[] { "D:20200217232824Z", new DateTimeOffset(2020, 02, 17, 23, 28, 24, TimeSpan.Zero)},
+                new object[] { "D:20190915203545Z00'00'", new DateTimeOffset(2019, 09, 15, 20, 35, 45, TimeSpan.Zero)},
                 new object[] { "D:20161127184129+00'00'", new DateTimeOffset(2016, 11, 27, 18, 41, 29, TimeSpan.Zero)},
                 new object[] { "D:20150211064040-05'00'", new DateTimeOffset(2015, 02, 11, 06, 40, 40, TimeSpan.FromHours(-5))},
                 new object[] { "D:20150211064040+05'00'", new DateTimeOffset(2015, 02, 11, 06, 40, 40, TimeSpan.FromHours(+5))},
