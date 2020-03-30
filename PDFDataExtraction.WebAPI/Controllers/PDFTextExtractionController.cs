@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.PdfImageConversion;
@@ -22,18 +23,21 @@ namespace PDFDataExtraction.WebAPI.Controllers
         private readonly IPDFTextExtractor _pdfTextExtractor;
         private readonly IPDFToImagesConverter _pdfToImagesConverter;
         private readonly IPDFMetadataProvider _pdfMetadataProvider;
+        private readonly ILogger<PDFTextExtractionController> _logger;
 
-        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor, IPDFToImagesConverter pdfToImagesConverter, IPDFMetadataProvider pdfMetadataProvider)
+        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor, IPDFToImagesConverter pdfToImagesConverter, IPDFMetadataProvider pdfMetadataProvider, ILogger<PDFTextExtractionController> logger)
         {
             _pdfTextExtractor = pdfTextExtractor;
             _pdfToImagesConverter = pdfToImagesConverter;
             _pdfMetadataProvider = pdfMetadataProvider;
+            _logger = logger;
         }
         
         [HttpGet]
         [ApiExplorerSettings(IgnoreApi =true)]
         public IActionResult Get()
         {
+            _logger.LogInformation("Testing!");
             return new OkObjectResult("Test");
         }
 

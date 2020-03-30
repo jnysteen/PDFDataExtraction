@@ -1,28 +1,21 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using JNysteen.FileTypeIdentifier;
 using JNysteen.FileTypeIdentifier.Interfaces;
 using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.WebAPI.Extensions;
 using PDFDataExtraction.WebAPI.Helpers;
+using Serilog;
 
 namespace PDFDataExtraction.WebAPI
 {
@@ -43,7 +36,10 @@ namespace PDFDataExtraction.WebAPI
             services.AddLogging(loggingBuilder =>
             {
                 
+                loggingBuilder.AddSerilog();
             });
+            
+            
             services.AddControllers();
 
             services.ConfigureSwaggerGen();
@@ -88,6 +84,11 @@ namespace PDFDataExtraction.WebAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // app.UseSerilogRequestLogging(c =>
+            // {
+            //     
+            // });
 
             app.ConfigureSwaggerUI();
             
