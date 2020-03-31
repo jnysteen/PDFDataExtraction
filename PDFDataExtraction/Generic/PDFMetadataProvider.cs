@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using PDFDataExtraction.Exceptions;
@@ -27,7 +25,7 @@ namespace PDFDataExtraction.Generic
             using var fileStream = File.OpenRead(filePath);
             using var md5Hasher = MD5.Create();
             var hash = md5Hasher.ComputeHash(fileStream);
-            var base64String = Convert.ToBase64String(hash);
+            var base64String = ByteArrayToHex(hash);
             return base64String;
         }
 
@@ -36,7 +34,7 @@ namespace PDFDataExtraction.Generic
             var documentTextAsBytes = Encoding.UTF8.GetBytes(document.GetAsString());
             using var md5Hasher = MD5.Create();
             var hash = md5Hasher.ComputeHash(documentTextAsBytes);
-            var base64String = Convert.ToBase64String(hash);
+            var base64String = ByteArrayToHex(hash);
             return base64String;
         }
 
@@ -56,6 +54,17 @@ namespace PDFDataExtraction.Generic
             
             return PDFEmbeddedMetadata.CreateFromMetadataScriptOutput(outputDictionary);
         }
+        
+        private static string ByteArrayToHex(byte[] bytes)
+        {
+            var result = new StringBuilder(bytes.Length * 2);
+
+            foreach (var b in bytes)
+                result.Append(b.ToString("X2"));
+
+            return result.ToString();
+        }
+
     }
 
     public class PDFEmbeddedMetadata
