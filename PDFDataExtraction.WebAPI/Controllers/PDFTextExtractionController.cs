@@ -167,7 +167,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             ///     Roughly the amount of pixels difference in the Y coordinates that is allowed for words on the same line. The default value is 10
             /// </summary>
             [FromQuery(Name = "wordLineDiff")]
-            public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 10;
+            public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 4;
                 
             /// <summary>
             ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.
