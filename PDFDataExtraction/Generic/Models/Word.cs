@@ -1,20 +1,20 @@
 using System.Linq;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
-namespace PDFDataExtraction.Generic
+namespace PDFDataExtraction.Generic.Models
 {
     public class Word
     {
-        [JsonPropertyName("bbox")]
+        [JsonProperty("bbox")]
         public BoundingBox BoundingBox { get; set; } 
         
-        [JsonPropertyName("chars")]
+        [JsonProperty("chars")]
         public Character[] Characters { get; set; }
         
         /// <summary>
         ///     The line that this word is in
         /// </summary>
-        [JsonPropertyName("line")]
+        [JsonProperty("line")]
         public Line Line { get; set; }
         
 

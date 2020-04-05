@@ -1,5 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
+using PDFDataExtraction.Generic.Models;
 
 namespace PDFDataExtraction.Generic
 {

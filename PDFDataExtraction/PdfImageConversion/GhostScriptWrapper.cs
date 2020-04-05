@@ -7,9 +7,8 @@ using Microsoft.Extensions.Logging;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Helpers;
-using PDFDataExtraction.PdfImageConversion;
 
-namespace PDFDataExtraction.GhostScript
+namespace PDFDataExtraction.PdfImageConversion
 {
     public class GhostScriptWrapper : IPDFToImagesConverter
     {

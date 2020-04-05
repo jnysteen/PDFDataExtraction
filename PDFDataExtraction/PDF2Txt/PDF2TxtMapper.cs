@@ -4,10 +4,11 @@ using System.Linq;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.Generic.Models;
 using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PDF2Txt.Models;
-using Line = PDFDataExtraction.Generic.Line;
-using Page = PDFDataExtraction.Generic.Page;
+using Line = PDFDataExtraction.Generic.Models.Line;
+using Page = PDFDataExtraction.Generic.Models.Page;
 
 namespace PDFDataExtraction.PDF2Txt
 {
@@ -34,7 +35,7 @@ namespace PDFDataExtraction.PDF2Txt
                 var pageBoundingBox = GetBoundingBoxFromString(page.Bbox);
 
                 var pageNumber = pageIndex + 1;
-                var outputPage = new Generic.Page()
+                var outputPage = new Page()
                 {
                     Width = pageBoundingBox.Width,
                     Height = pageBoundingBox.Height,

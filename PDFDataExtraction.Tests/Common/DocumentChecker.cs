@@ -1,5 +1,6 @@
 using System.Linq;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.Generic.Models;
 using Xunit;
 
 namespace PDFDataExtraction.Tests.Common

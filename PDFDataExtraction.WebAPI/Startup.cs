@@ -1,26 +1,19 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using JNysteen.FileTypeIdentifier;
 using JNysteen.FileTypeIdentifier.Interfaces;
 using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using PDFDataExtraction.Generic;
-using PDFDataExtraction.GhostScript;
 using PDFDataExtraction.PDF2Txt;
+using PDFDataExtraction.PdfImageConversion;
 using PDFDataExtraction.WebAPI.Extensions;
 using PDFDataExtraction.WebAPI.Helpers;
 
@@ -44,7 +37,11 @@ namespace PDFDataExtraction.WebAPI
             {
                 
             });
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(c =>
+                {
+                    c.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+                    c.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.All;
+                });
 
             services.ConfigureSwaggerGen();
             

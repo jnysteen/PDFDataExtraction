@@ -29,6 +29,7 @@ namespace PDFDataExtraction.WebAPI.Extensions
                     c.IncludeXmlComments(xmlPath);
                 }
             );
+            services.AddSwaggerGenNewtonsoftSupport();
         }
 
         public static void ConfigureSwaggerUI(this IApplicationBuilder app)

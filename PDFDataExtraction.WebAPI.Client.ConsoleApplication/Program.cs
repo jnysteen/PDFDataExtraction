@@ -54,7 +54,7 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                     
                     var fileParameter = new FileParameter(ms);
 
-                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(true, null, null, fileParameter);
+                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(false, null, null, fileParameter);
 
                     var extractedTextSimple = GetAsString(extractedDocument.ExtractedData);
                     Console.WriteLine(extractedTextSimple);

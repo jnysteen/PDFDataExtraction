@@ -1,8 +1,7 @@
 using System.Linq;
-using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 
-namespace PDFDataExtraction.Generic
+namespace PDFDataExtraction.Generic.Models
 {
     public class Line
     {

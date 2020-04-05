@@ -1,5 +1,5 @@
 using PDFDataExtraction.Generic;
-using PDFDataExtraction.GhostScript;
+using PDFDataExtraction.Generic.Models;
 using PDFDataExtraction.PdfImageConversion;
 
 // ReSharper disable InconsistentNaming

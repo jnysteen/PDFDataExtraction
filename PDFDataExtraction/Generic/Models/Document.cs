@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace PDFDataExtraction.Generic
+namespace PDFDataExtraction.Generic.Models
 {
     public class Document
     {

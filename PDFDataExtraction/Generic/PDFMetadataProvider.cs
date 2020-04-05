@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using PDFDataExtraction.Exceptions;
+using PDFDataExtraction.Generic.Models;
 using PDFDataExtraction.Helpers;
 
 namespace PDFDataExtraction.Generic
@@ -50,7 +51,7 @@ namespace PDFDataExtraction.Generic
                 throw new PDFTextExtractionException($"{applicationName} exited with status code: {statusCode}");
             
             using var reader = new StringReader(stdOutput);
-            var outputDictionary = JsonSerializer.Deserialize<Dictionary<string, string>>(reader.ReadToEnd());
+            var outputDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.ReadToEnd());
             
             return PDFEmbeddedMetadata.CreateFromMetadataScriptOutput(outputDictionary);
         }

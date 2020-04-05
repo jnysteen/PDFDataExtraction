@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
-using PDFDataExtraction.GhostScript;
+using PDFDataExtraction.Generic.Models;
 using PDFDataExtraction.Helpers;
 using PDFDataExtraction.PDF2Txt.Models;
 using PDFDataExtraction.PdfImageConversion;
@@ -49,9 +49,8 @@ namespace PDFDataExtraction.PDF2Txt
 
             // Certain documents contain the character 0x00, which ends up in the XML - and that char is not allowed in XML, breaking the serializer.
             // The lines below removes the invalid char
-            var invalidChar = (char) 0x00; 
-            var invalidCharAsString = invalidChar.ToString();
-            stdOutput = stdOutput.Replace(invalidCharAsString, "");
+            var invalidChar = ((char) 0x00).ToString();
+            stdOutput = stdOutput.Replace(invalidChar, "");
 
             using var reader = new StringReader(stdOutput);
             var deserializedDoc = (Pages) _xmlSerializer.Deserialize(reader);

@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace PDFDataExtraction.Generic
+namespace PDFDataExtraction.Generic.Models
 {
     public class Page
     {

@@ -1,4 +1,4 @@
-namespace PDFDataExtraction.Generic
+namespace PDFDataExtraction.Generic.Models
 {
     /// <summary>
     ///     Metadata from the input PDF file

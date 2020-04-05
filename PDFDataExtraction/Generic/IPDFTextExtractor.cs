@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using PDFDataExtraction.Configuration;
-using PDFDataExtraction.GhostScript;
+using PDFDataExtraction.Generic.Models;
 using PDFDataExtraction.PdfImageConversion;
 
 namespace PDFDataExtraction.Generic

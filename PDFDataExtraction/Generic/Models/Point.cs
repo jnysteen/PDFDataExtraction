@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PDFDataExtraction.Generic
+namespace PDFDataExtraction.Generic.Models
 {
     /// <summary>
     ///     A 2D point

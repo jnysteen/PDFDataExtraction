@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.Generic.Models;
 using PDFDataExtraction.PdfImageConversion;
 using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
