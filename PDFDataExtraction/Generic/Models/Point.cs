@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace PDFDataExtraction.Generic
 {
     /// <summary>
@@ -8,11 +10,13 @@ namespace PDFDataExtraction.Generic
         /// <summary>
         ///     The X coordinate of the point
         /// </summary>
+        [Required]
         public double X { get; set; }
 
         /// <summary>
         ///     The Y coordinate of the point
         /// </summary>
+        [Required]
         public double Y { get; set; }
     }
 }

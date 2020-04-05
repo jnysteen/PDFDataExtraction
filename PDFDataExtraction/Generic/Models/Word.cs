@@ -10,6 +10,13 @@ namespace PDFDataExtraction.Generic
         
         [JsonPropertyName("chars")]
         public Character[] Characters { get; set; }
+        
+        /// <summary>
+        ///     The line that this word is in
+        /// </summary>
+        [JsonPropertyName("line")]
+        public Line Line { get; set; }
+        
 
         public string Text => string.Join("", Characters.Select(c => c.Text));
         

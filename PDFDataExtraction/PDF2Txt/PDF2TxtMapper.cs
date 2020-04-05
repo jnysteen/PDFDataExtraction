@@ -64,6 +64,20 @@ namespace PDFDataExtraction.PDF2Txt
                     allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
                 var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, pageNumber, ref currentLineNumber);
 
+                foreach (var createdLine in createdLines)
+                {
+                    createdLine.Page = outputPage;
+                    foreach (var word in createdLine.Words)
+                    {
+                        word.Line = createdLine;
+
+                        foreach (var character in word.Characters)
+                        {
+                            character.Word = word;
+                        }
+                    }
+                }
+                
                 outputPage.Lines = createdLines;
 
                 outputPages.Add(outputPage);
