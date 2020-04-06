@@ -178,8 +178,16 @@ namespace PDFDataExtraction.PDF2Txt
 
             var wordBoundingBox = new BoundingBox()
             {
-                TopLeftCorner = firstChar.BoundingBox.TopLeftCorner,
-                BottomRightCorner = lastChar.BoundingBox.BottomRightCorner
+                TopLeftCorner = new Point()
+                {
+                    X = firstChar.BoundingBox.TopLeftCorner.X,
+                    Y = firstChar.BoundingBox.TopLeftCorner.Y
+                } ,
+                BottomRightCorner = new Point()
+                {
+                    X = lastChar.BoundingBox.BottomRightCorner.X,
+                    Y = lastChar.BoundingBox.BottomRightCorner.Y,
+                } 
             };
 
             return new Word()
