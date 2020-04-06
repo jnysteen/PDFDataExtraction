@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Newtonsoft.Json;
 
@@ -15,12 +16,14 @@ namespace PDFDataExtraction.Generic.Models
         ///     The line's number on its page (starting from 1)
         /// </summary>
         [JsonProperty("lineNumberInPage")]
+        [Required]
         public int LineNumberInPage { get; set; }
 
         /// <summary>
         ///     The line's number in the document (starting from 1)
         /// </summary>
         [JsonProperty("lineNumberInDocument")]
+        [Required]
         public int LineNumberInDocument { get; set; }
 
         /// <summary>

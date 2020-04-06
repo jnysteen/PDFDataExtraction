@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace PDFDataExtraction.Generic.Models
@@ -12,16 +13,19 @@ namespace PDFDataExtraction.Generic.Models
         /// <summary>
         ///     The width of the page
         /// </summary>
+        [Required]
         public double Width { get; set; }
 
         /// <summary>
         ///     The height of the page
         /// </summary>
+        [Required]
         public double Height { get; set; }
 
         /// <summary>
         ///     The number of the page in the document (starting from 1)
         /// </summary>
+        [Required]
         public int PageNumber { get; set; }
         
         public override string ToString()
