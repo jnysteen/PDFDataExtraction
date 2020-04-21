@@ -19,10 +19,7 @@ namespace PDFDataExtraction.PDF2Txt
             var outputPages = new List<Page>();
 
             var allNonEmptyTextParts = pages.Page.SelectMany(p => p.Textbox).SelectMany(tb => tb.Textlines).SelectMany(tl => tl.TextParts).Where(t => !string.IsNullOrEmpty(t.Text)).ToList();
-
             var characterOfMeanSize = allNonEmptyTextParts.OrderBy(t => t.Size).Skip(allNonEmptyTextParts.Count() / 2).First();
-            
-            // TODO The width of a whitespace depends on the font size - this does not take that fact into account.
             var whitespaceSize = GetBoundingBoxFromString(characterOfMeanSize.Bbox).Width * docElementConstructionConfiguration.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;            
 
             Func<IEnumerable<Character>, Word> wordCreator = GetWordFromCharacters;
@@ -61,8 +58,7 @@ namespace PDFDataExtraction.PDF2Txt
                     }
                 }
 
-                var wordsInReadingOrder =
-                    allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
+                var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
                 var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, pageNumber, ref currentLineNumber);
 
                 foreach (var createdLine in createdLines)
@@ -80,7 +76,6 @@ namespace PDFDataExtraction.PDF2Txt
                 }
                 
                 outputPage.Lines = createdLines;
-
                 outputPages.Add(outputPage);
             }
 
@@ -96,10 +91,14 @@ namespace PDFDataExtraction.PDF2Txt
         private static Line[] ConstructLinesFromWords(IEnumerable<Word> wordsInReadingOrder,
             DocElementConstructionConfiguration docElementConstructionConfiguration, int pageNumber, ref int currentDocumentLineNumber)
         {
-            var maxPixelDifferenceInWordsInTheSameLine = docElementConstructionConfiguration.MaxPixelDifferenceInWordsInTheSameLine;
+            var maxPixelDifferenceInWordsInTheSameLine = docElementConstructionConfiguration.MaxDifferenceInWordsInTheSameLine;
             var constructedLines = 
                 Grouper.GroupByCondition(wordsInReadingOrder, 
-                    (thisWord, thatWord) => WordsToLinesGroupingCondition(thisWord, thatWord, maxPixelDifferenceInWordsInTheSameLine), WordsToLinesGroupCreator)
+                    (thisWord, thatWord) =>
+                    {
+                        var allowedYDifference = maxPixelDifferenceInWordsInTheSameLine * thisWord.BoundingBox.Height;
+                        return WordsToLinesGroupingCondition(thisWord, thatWord, allowedYDifference);
+                    }, WordsToLinesGroupCreator)
                     .ToArray();
 
             for (var lineIndex = 0; lineIndex < constructedLines.Length; lineIndex++)

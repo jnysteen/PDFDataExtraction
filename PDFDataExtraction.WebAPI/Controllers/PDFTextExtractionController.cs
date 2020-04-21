@@ -73,7 +73,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             if (extractionParameters == null)
                 return;
             
-            conf.MaxPixelDifferenceInWordsInTheSameLine = extractionParameters.MaxPixelDifferenceInWordsInTheSameLine;
+            conf.MaxDifferenceInWordsInTheSameLine = extractionParameters.MaxDifferenceInWordsInTheSameLine;
             conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
         }
 
@@ -165,10 +165,11 @@ namespace PDFDataExtraction.WebAPI.Controllers
             public bool? ConvertPdfToImages { get; set; }
             
             /// <summary>
-            ///     Roughly the amount of pixels difference in the Y coordinates that is allowed for words on the same line. The default value is 10
+            ///     The allowed difference in Y coordinates for words in the same line as a factor of the average character height.
+            ///     The default value is 0.05
             /// </summary>
             [FromQuery(Name = "wordLineDiff")]
-            public int MaxPixelDifferenceInWordsInTheSameLine { get; set; } = 4;
+            public double MaxDifferenceInWordsInTheSameLine { get; set; } = 0.05;
                 
             /// <summary>
             ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.

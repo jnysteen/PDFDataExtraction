@@ -7,7 +7,7 @@ namespace PDFDataExtraction.Generic.Models
         /// <summary>
         ///     A box that fits the character
         /// </summary>
-        [JsonProperty("bbox")] 
+        [JsonProperty("bbox")]
         public BoundingBox BoundingBox { get; set; }
 
         /// <summary>
