@@ -1,9 +1,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Generic.Models;
@@ -50,7 +53,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200, Type = typeof(PDFTextExtractionResult))]
         [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
-        public async Task<ActionResult<PDFTextExtractionResult>> DetailedExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
+        public async Task DetailedExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
@@ -58,23 +61,13 @@ namespace PDFDataExtraction.WebAPI.Controllers
             try
             {
                 var extractionResult = await ProcessFile(file, conf, extractionParameters.ConvertPdfToImages ?? false);
-                return extractionResult;
+                await WriteJsonResponse(extractionResult, HttpStatusCode.OK);
             }
             catch (Exception e)
             {
                 var result = new PDFTextExtractionResult {ErrorMessage = e.Message};
-                return new BadRequestObjectResult(result);
+                await WriteJsonResponse(result, HttpStatusCode.BadRequest);
             }
-        }
-
-        private static void UseUserProvidedParameters(ExtractionParameters extractionParameters,
-            DocElementConstructionConfiguration conf)
-        {
-            if (extractionParameters == null)
-                return;
-            
-            conf.MaxDifferenceInWordsInTheSameLine = extractionParameters.MaxDifferenceInWordsInTheSameLine;
-            conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
         }
 
         /// <summary>
@@ -88,7 +81,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(500, Type = typeof(string))]
         [Produces("application/json")]
-        public async Task<ActionResult<string>> SimpleExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
+        public async Task SimpleExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
@@ -97,14 +90,24 @@ namespace PDFDataExtraction.WebAPI.Controllers
             {
                 var extractionResult = await ProcessFile(file, conf, false);
                 var documentAsString = extractionResult.ExtractedData?.GetAsString();
-                return documentAsString;
+                await WriteJsonResponse(documentAsString, HttpStatusCode.OK);
             }
             catch (Exception e)
             {
-                return new BadRequestObjectResult(e.Message);
+                await WriteJsonResponse(e.Message, HttpStatusCode.OK);
             }
         }
-
+        
+        private static void UseUserProvidedParameters(ExtractionParameters extractionParameters,
+            DocElementConstructionConfiguration conf)
+        {
+            if (extractionParameters == null)
+                return;
+            
+            conf.MaxDifferenceInWordsInTheSameLine = extractionParameters.MaxDifferenceInWordsInTheSameLine;
+            conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
+        }
+        
         private async Task<PDFTextExtractionResult> ProcessFile(IFormFile file, DocElementConstructionConfiguration config, bool convertPdfToPngs)
         {                
             var fileId = Guid.NewGuid().ToString();
@@ -154,6 +157,25 @@ namespace PDFDataExtraction.WebAPI.Controllers
                     
                 }
             }
+        }
+        
+        private async Task WriteJsonResponse(object o, HttpStatusCode statusCode)
+        {
+            var jsonSerializer = new JsonSerializer
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                PreserveReferencesHandling = PreserveReferencesHandling.All
+            };
+
+            await using var ms = new MemoryStream();
+            await using var streamWriter = new StreamWriter(ms);
+            jsonSerializer.Serialize(streamWriter, o);
+            await streamWriter.FlushAsync();
+
+            var jsonText = Encoding.UTF8.GetString(ms.ToArray());
+            
+            Response.StatusCode = (int) statusCode;
+            await Response.WriteAsync(jsonText);
         }
 
         public class ExtractionParameters
