@@ -4,8 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using PdfDataExtraction;
-using PdfDataExtraction.WebAPI.Client;
+using PDFDataExtraction.WebAPI.Client.Api;
+using PDFDataExtraction.WebAPI.Client.Model;
+using RestSharp.Portable;
 
 namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 {
@@ -14,8 +15,7 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
         static async Task Main(string[] args)
         {
             var apiEndpoint = "http://localhost:4000";
-            using var httpClient = new HttpClient();
-            var pdfExtractionClient = new PdfDataExtractionClient(apiEndpoint, httpClient);
+            var pdfExtractionClient = new PDFTextExtractionApi(apiEndpoint);
 
             while (true)
             {
@@ -44,17 +44,13 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                 var outputFilePathSimple = $"{outputBase}-extracted-data.simple.txt";
                 var outputImageFileBase = $"{outputBase}-extracted-data";
                 
-                
-
                 // await using (var inputFileStream = File.Open(formattedInputFilePath, FileMode.Open))
                 var t = File.ReadAllBytes(formattedInputFilePath);
                 using var ms = new MemoryStream(t);
                 {
                     Console.WriteLine("Sending request to API now...");
                     
-                    var fileParameter = new FileParameter(ms);
-
-                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(false, null, null, fileParameter);
+                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(ms, null, null);
 
                     var extractedTextSimple = GetAsString(extractedDocument.ExtractedData);
                     Console.WriteLine(extractedTextSimple);

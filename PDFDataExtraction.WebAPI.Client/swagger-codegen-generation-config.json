@@ -1,0 +1,8 @@
+{
+  "useDateTimeOffset" : true,
+  "optionalMethodArgument": true,
+  "optionalAssemblyInfo": false,
+  "netCoreProjectFile": true,
+  "targetFramework": "v5.0",
+  "packageName": "PDFDataExtraction.WebAPI.Client"
+}
