@@ -80,8 +80,8 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ServiceFilter(typeof(ValidateInputPDFAttribute))]
         [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(500, Type = typeof(string))]
-        [Produces("application/json")]
-        public async Task SimpleExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
+        [Produces("text/plain")]
+        public async Task<ActionResult<string>> SimpleExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
@@ -90,11 +90,11 @@ namespace PDFDataExtraction.WebAPI.Controllers
             {
                 var extractionResult = await ProcessFile(file, conf, false);
                 var documentAsString = extractionResult.ExtractedData?.GetAsString();
-                await WriteJsonResponse(documentAsString, HttpStatusCode.OK);
+                return documentAsString;
             }
             catch (Exception e)
             {
-                await WriteJsonResponse(e.Message, HttpStatusCode.OK);
+                return BadRequest(e.Message);
             }
         }
         
@@ -159,6 +159,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
         
+        /// <summary>
+        ///     Using this fixes the concurrency issues of Newtonsoft.Json, where ID assignment can go wrong when the API is under heavy load
+        /// </summary>
         private async Task WriteJsonResponse(object o, HttpStatusCode statusCode)
         {
             var jsonSerializer = new JsonSerializer
@@ -166,12 +169,12 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 PreserveReferencesHandling = PreserveReferencesHandling.All
             };
-
+        
             await using var ms = new MemoryStream();
             await using var streamWriter = new StreamWriter(ms);
             jsonSerializer.Serialize(streamWriter, o);
             await streamWriter.FlushAsync();
-
+        
             var jsonText = Encoding.UTF8.GetString(ms.ToArray());
             
             Response.StatusCode = (int) statusCode;
