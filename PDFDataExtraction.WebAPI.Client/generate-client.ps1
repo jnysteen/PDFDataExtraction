@@ -13,4 +13,7 @@ Move-Item -Path ".\src\PDFDataExtraction.WebAPI.Client\*" -Destination "." -Forc
 Remove-Item ".\src" -Recurse
 Remove-Item ".\.openapi-generator" -Recurse -Force
 
+# Fix that generated client is affected by the locale of the runtime in bad ways (https://github.com/OpenAPITools/openapi-generator/pull/6194) 
+(Get-Content .\Client\ClientUtils.cs).replace('return Convert.ToString(obj);','return Convert.ToString(obj, CultureInfo.InvariantCulture);') | Set-Content .\Client\ClientUtils.cs
+
 Write-Output "Client generation done!"
