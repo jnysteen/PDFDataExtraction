@@ -3,6 +3,7 @@
   "optionalMethodArgument": true,
   "optionalAssemblyInfo": false,
   "netCoreProjectFile": true,
-  "targetFramework": "v5.0",
+  "sortParamsByRequiredFlag": true,
+  "targetFramework": "netstandard2.1",
   "packageName": "PDFDataExtraction.WebAPI.Client"
 }

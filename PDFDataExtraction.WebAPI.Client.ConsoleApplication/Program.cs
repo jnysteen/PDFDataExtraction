@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PDFDataExtraction.WebAPI.Client.Api;
 using PDFDataExtraction.WebAPI.Client.Model;
-using RestSharp.Portable;
 
 namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
 {
@@ -50,7 +49,7 @@ namespace PDFDataExtraction.WebAPI.Client.ConsoleApplication
                 {
                     Console.WriteLine("Sending request to API now...");
                     
-                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(ms, null, null);
+                    var extractedDocument = await pdfExtractionClient.DetailedTextExtractionAsync(ms);
 
                     var extractedTextSimple = GetAsString(extractedDocument.ExtractedData);
                     Console.WriteLine(extractedTextSimple);

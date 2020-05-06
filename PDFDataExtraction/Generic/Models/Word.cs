@@ -17,7 +17,6 @@ namespace PDFDataExtraction.Generic.Models
         [JsonProperty("line")]
         public Line Line { get; set; }
         
-
         public string Text => string.Join("", Characters.Select(c => c.Text));
         
         public override string ToString()

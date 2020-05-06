@@ -53,7 +53,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [Produces("application/json")]
         [ProducesResponseType(200, Type = typeof(PDFTextExtractionResult))]
         [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
-        public async Task DetailedExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
+        public async Task DetailedExtraction([Required] IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
@@ -81,7 +81,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ProducesResponseType(200, Type = typeof(string))]
         [ProducesResponseType(500, Type = typeof(string))]
         [Produces("text/plain")]
-        public async Task<ActionResult<string>> SimpleExtraction(IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
+        public async Task<ActionResult<string>> SimpleExtraction([Required] IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
             var conf = new DocElementConstructionConfiguration();
             UseUserProvidedParameters(extractionParameters, conf);
@@ -176,7 +176,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
             await streamWriter.FlushAsync();
         
             var jsonText = Encoding.UTF8.GetString(ms.ToArray());
-            
+
+            Response.ContentType = "application/json";
+            Response.ContentLength = Encoding.UTF8.GetBytes(jsonText).Length;
             Response.StatusCode = (int) statusCode;
             await Response.WriteAsync(jsonText);
         }
