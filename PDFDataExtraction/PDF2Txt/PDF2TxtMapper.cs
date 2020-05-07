@@ -75,7 +75,7 @@ namespace PDFDataExtraction.PDF2Txt
                 }
 
                 var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
-                var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, pageNumber, ref currentLineNumber);
+                var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, ref currentLineNumber);
 
                 foreach (var createdLine in createdLines)
                 {
@@ -95,9 +95,6 @@ namespace PDFDataExtraction.PDF2Txt
                 outputPages.Add(outputPage);
             }
 
-            var allCharacters = outputPages.SelectMany(p => p.Lines.SelectMany(l => l.Words.SelectMany(w => w.Characters)));
-            var wordsByFontSize = FontSizeGroupsCreator.FindFontSizeGroups(allCharacters);
-
             return new Document()
             {
                 Pages = outputPages.ToArray()
@@ -105,7 +102,7 @@ namespace PDFDataExtraction.PDF2Txt
         }
         
         private static Line[] ConstructLinesFromWords(IEnumerable<Word> wordsInReadingOrder,
-            DocElementConstructionConfiguration docElementConstructionConfiguration, int pageNumber, ref int currentDocumentLineNumber)
+            DocElementConstructionConfiguration docElementConstructionConfiguration, ref int currentDocumentLineNumber)
         {
             var maxPixelDifferenceInWordsInTheSameLine = docElementConstructionConfiguration.MaxDifferenceInWordsInTheSameLine;
             var constructedLines = 
