@@ -57,6 +57,22 @@ namespace PDFDataExtraction.PDF2Txt
                         allWordsOnPage.AddRange(wordsInLine);
                     }
                 }
+                
+                foreach (var figure in page.Figure)
+                {
+                    var nonEmptyTextParts = figure.TextParts.Where(t => !string.IsNullOrEmpty(t.Text));
+                    var textPartsAsCharacters =
+                        nonEmptyTextParts.Select(t => GetCharacterFromTextNode(t, outputPage));
+                    
+                    textPartsAsCharacters = textPartsAsCharacters.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
+
+                    var wordsInLine = Grouper.GroupByCondition(textPartsAsCharacters,
+                        (thisCharacter, theCharacterAfterThisCharacter) =>
+                            CharactersToWordGroupingCondition(thisCharacter, theCharacterAfterThisCharacter,
+                                whitespaceSize), wordCreator);
+
+                    allWordsOnPage.AddRange(wordsInLine);
+                }
 
                 var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
                 var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, pageNumber, ref currentLineNumber);
@@ -111,7 +127,11 @@ namespace PDFDataExtraction.PDF2Txt
 
         private static bool CharactersToWordGroupingCondition(Character thisCharacter, Character theCharacterAfterThisCharacter, double whitespaceSize)
         {
-            return theCharacterAfterThisCharacter.BoundingBox.MinX - thisCharacter.BoundingBox.MaxX <=
+            var allowedDiffInY = whitespaceSize * 0.02;
+
+            var yDiff = Math.Abs(thisCharacter.BoundingBox.MinY - theCharacterAfterThisCharacter.BoundingBox.MinY); 
+            
+            return yDiff <= allowedDiffInY && theCharacterAfterThisCharacter.BoundingBox.MinX - thisCharacter.BoundingBox.MaxX <=
                    whitespaceSize;
         }
         
