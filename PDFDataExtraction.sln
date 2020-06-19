@@ -12,6 +12,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.WebAPI", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.Viewer", "PDFDataExtraction.Viewer\PDFDataExtraction.Viewer.csproj", "{042C5388-9AF1-4B86-95FF-EA618EB5664E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.GrpcService", "PDFDataExtraction.GrpcService\PDFDataExtraction.GrpcService.csproj", "{4805E521-664C-432A-864F-ABD5900217FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.GrpcService.Client", "PDFDataExtraction.GrpcService.Client\PDFDataExtraction.GrpcService.Client.csproj", "{81A250D1-F98E-455E-B408-FCD94A913291}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFDataExtraction.Grpc.Common", "PDFDataExtraction.Grpc.Common\PDFDataExtraction.Grpc.Common.csproj", "{DC95B696-2F2E-424A-A0A7-9FFC6AD30405}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +48,17 @@ Global
 		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{042C5388-9AF1-4B86-95FF-EA618EB5664E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4805E521-664C-432A-864F-ABD5900217FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4805E521-664C-432A-864F-ABD5900217FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4805E521-664C-432A-864F-ABD5900217FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4805E521-664C-432A-864F-ABD5900217FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81A250D1-F98E-455E-B408-FCD94A913291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81A250D1-F98E-455E-B408-FCD94A913291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81A250D1-F98E-455E-B408-FCD94A913291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81A250D1-F98E-455E-B408-FCD94A913291}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC95B696-2F2E-424A-A0A7-9FFC6AD30405}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC95B696-2F2E-424A-A0A7-9FFC6AD30405}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC95B696-2F2E-424A-A0A7-9FFC6AD30405}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC95B696-2F2E-424A-A0A7-9FFC6AD30405}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+// This name cannot be properly cased due to the tooling having issues with it -.-
+service Pdfdataextraction {
+  rpc ExtractSimple (PDFDataExtractionRequest) returns (PDFDataExtractionResultSimple);
+  rpc ExtractDetailed (PDFDataExtractionRequest) returns (PDFDataExtractionResultDetailed);
+}
+
+message PDFDataExtractionRequest {
+  bytes fileContents = 1;
+  string fileName = 2;
+  string fileExtension = 3;
+}
+
+message PDFDataExtractionResultSimple {
+  string extractedText = 1;
+}
+
+message PDFDataExtractionResultDetailed {
+  Document extractedDocument = 1;
+}
+
+message Document {
+  repeated Page pages = 1;
+
+  message Page {
+    string id = 1;
+    repeated Line lines = 2;
+    double width = 3;
+    double height = 4;
+    int32 pageNumber = 5;
+    
+    message Line {
+      string id = 1;
+      repeated Word words = 2;
+      int32 lineNumberInPage = 3;
+      int32 lineNumberInDocument = 4;
+      string pageId = 5;
+      
+      message Word {
+        string id = 1;
+        BoundingBox boundingBox = 2;
+        repeated Character characters = 3;
+        string lineId = 4;
+        int32 wordNumberInDocument = 5;
+        string text = 6;
+        
+        message Character {
+          string id = 1;
+          BoundingBox boundingBox = 2;
+          string text = 3;
+          string font = 4;
+          string wordId = 5;
+          int32 charNumberInDocument = 6;
+        }
+      }      
+    }
+  }
+  
+  message BoundingBox {
+    Point topLeftCorner = 1;
+    Point bottomRight = 2;
+    
+    message Point {
+      double X = 1;
+      double Y = 2;
+    }
+  }
+}
+

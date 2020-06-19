@@ -33,7 +33,6 @@ namespace PDFDataExtraction.PDF2Txt
                 var page = pages.Page[pageIndex];
                 var pageBoundingBox = GetBoundingBoxFromString(page.Bbox);
 
-                var pageNumber = pageIndex + 1;
                 var outputPage = new Page()
                 {
                     Width = pageBoundingBox.Width,
