@@ -193,10 +193,10 @@ namespace PDFDataExtraction.WebAPI.Controllers
             
             /// <summary>
             ///     The allowed difference in Y coordinates for words in the same line as a factor of the average character height.
-            ///     The default value is 0.05
+            ///     The default value is 0.15
             /// </summary>
             [FromQuery(Name = "wordLineDiff")]
-            public double MaxDifferenceInWordsInTheSameLine { get; set; } = 0.05;
+            public double MaxDifferenceInWordsInTheSameLine { get; set; } = 0.15;
                 
             /// <summary>
             ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.

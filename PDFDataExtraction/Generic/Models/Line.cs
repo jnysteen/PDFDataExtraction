@@ -7,6 +7,12 @@ namespace PDFDataExtraction.Generic.Models
     public class Line
     {
         /// <summary>
+        ///     The ID of the line. The ID is unique in the context of the document.
+        /// </summary>
+        [JsonProperty("id")]
+        public string Id => $"line-{LineNumberInDocument}";
+        
+        /// <summary>
         ///     The words in the line, ordered in a left-to-right reading direction
         /// </summary>
         [JsonProperty("words")]
@@ -27,10 +33,10 @@ namespace PDFDataExtraction.Generic.Models
         public int LineNumberInDocument { get; set; }
 
         /// <summary>
-        ///     The page that this line is on
+        ///     The ID of the page that this line is on
         /// </summary>
-        [JsonProperty("page")]
-        public Page Page { get; set; }
+        [JsonProperty("pageId")]
+        public string PageId { get; set; }
 
         public override string ToString()
         {

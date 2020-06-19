@@ -5,6 +5,12 @@ namespace PDFDataExtraction.Generic.Models
     public class Character
     {
         /// <summary>
+        ///     The ID of the character. The ID is unique in the context of the document.
+        /// </summary>
+        [JsonProperty("id")]
+        public string Id => $"char-{CharNumberInDocument}";
+        
+        /// <summary>
         ///     A box that fits the character
         /// </summary>
         [JsonProperty("bbox")]
@@ -23,9 +29,14 @@ namespace PDFDataExtraction.Generic.Models
         public string Font { get; set; }
 
         /// <summary>
-        ///     The word that this character is in
+        ///     The ID of the word that this character is in
         /// </summary>
-        [JsonProperty("word")]
-        public Word Word { get; set; }
+        [JsonProperty("wordId")]
+        public string WordId { get; set; }
+
+        /// <summary>
+        ///     This character's number in the document 
+        /// </summary>
+        public int CharNumberInDocument { get; set; }
     }
 }

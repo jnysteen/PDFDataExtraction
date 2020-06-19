@@ -24,7 +24,9 @@ namespace PDFDataExtraction.PDF2Txt
 
             Func<IEnumerable<Character>, Word> wordCreator = GetWordFromCharacters;
 
-            var currentLineNumber = 1;
+            var nextLineNumber = 1;
+            var nextWordNumber = 1;
+            var nextCharNumber = 1;
 
             for (var pageIndex = 0; pageIndex < pages.Page.Count; pageIndex++)
             {
@@ -75,18 +77,20 @@ namespace PDFDataExtraction.PDF2Txt
                 }
 
                 var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
-                var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, ref currentLineNumber);
+                var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, ref nextLineNumber);
 
                 foreach (var createdLine in createdLines)
                 {
-                    createdLine.Page = outputPage;
+                    createdLine.PageId = outputPage.Id;
                     foreach (var word in createdLine.Words)
                     {
-                        word.Line = createdLine;
+                        word.WordNumberInDocument = nextWordNumber++;
+                        word.LineId = createdLine.Id;
 
                         foreach (var character in word.Characters)
                         {
-                            character.Word = word;
+                            character.CharNumberInDocument = nextCharNumber++;
+                            character.WordId = word.Id;
                         }
                     }
                 }
@@ -134,7 +138,7 @@ namespace PDFDataExtraction.PDF2Txt
         
         private static bool WordsToLinesGroupingCondition(Word thisWord, Word nextWord, double toleratedDifference)
         {
-            return Math.Abs(thisWord.BoundingBox.MaxY - nextWord.BoundingBox.MaxY) < toleratedDifference;
+            return Math.Abs(thisWord.BoundingBox.MaxY - nextWord.BoundingBox.MaxY) <= toleratedDifference;
         }
         
         private static Line WordsToLinesGroupCreator(IEnumerable<Word> wordsInLine)
