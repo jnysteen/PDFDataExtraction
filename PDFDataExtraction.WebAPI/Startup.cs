@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using PDFDataExtraction.Generic;
+using PDFDataExtraction.OCRMyPDF;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PdfImageConversion;
 using PDFDataExtraction.WebAPI.Extensions;
@@ -66,6 +67,7 @@ namespace PDFDataExtraction.WebAPI
 
             services.AddScoped<IPDFTextExtractor, PDF2TxtWrapper>();
             services.AddScoped<IPDFToImagesConverter, GhostScriptWrapper>();
+            services.AddScoped<IOCRPDFWrapper, OCRPDFWrapper>();
 
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }

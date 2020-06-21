@@ -19,6 +19,7 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS runtime
 
 # install System.Drawing native dependencies
+# Install ocrmypdf (https://github.com/jbarlow83/OCRmyPDF)
 RUN apt-get update \
     && apt-get install -y --allow-unauthenticated --no-install-recommends \
         libc6-dev \ 
@@ -27,6 +28,7 @@ RUN apt-get update \
         python3 \
         python3-pip \
         ghostscript \
+        ocrmypdf \
         && \
     rm -rf /var/lib/apt/lists/*
 

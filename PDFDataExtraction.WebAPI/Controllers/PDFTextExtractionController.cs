@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;
 using PDFDataExtraction.Generic.Models;
+using PDFDataExtraction.OCRMyPDF;
 using PDFDataExtraction.PdfImageConversion;
 using PDFDataExtraction.WebAPI.Helpers;
 using PDFDataExtraction.WebAPI.Models;
@@ -26,12 +27,14 @@ namespace PDFDataExtraction.WebAPI.Controllers
         private readonly IPDFTextExtractor _pdfTextExtractor;
         private readonly IPDFToImagesConverter _pdfToImagesConverter;
         private readonly IPDFMetadataProvider _pdfMetadataProvider;
+        private readonly IOCRPDFWrapper _iocrpdfWrapper;
 
-        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor, IPDFToImagesConverter pdfToImagesConverter, IPDFMetadataProvider pdfMetadataProvider)
+        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor, IPDFToImagesConverter pdfToImagesConverter, IPDFMetadataProvider pdfMetadataProvider, IOCRPDFWrapper iocrpdfWrapper)
         {
             _pdfTextExtractor = pdfTextExtractor;
             _pdfToImagesConverter = pdfToImagesConverter;
             _pdfMetadataProvider = pdfMetadataProvider;
+            _iocrpdfWrapper = iocrpdfWrapper;
         }
         
         [HttpGet]
@@ -123,13 +126,15 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 // Save file to disk
                 await using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
                     await file.CopyToAsync(fileStream);
+
+                await _iocrpdfWrapper.OCRPDF(inputFilePath, inputFilePath, null);
                 
                 PageAsImage[] convertedImages = null;
                 if(convertPdfToPngs)
                     convertedImages = await _pdfToImagesConverter.ConvertPDFToPNGs(inputFilePath);
 
                 var extractedData = await _pdfTextExtractor.ExtractTextFromPDF(inputFilePath, config, convertedImages);
-                var embeddedMetaData = await _pdfMetadataProvider.GetPDFMetadata(inputFilePath);
+                // var embeddedMetaData = await _pdfMetadataProvider.GetPDFMetadata(inputFilePath);
                 var fileMd5 = _pdfMetadataProvider.GetFileMd5(inputFilePath);
                 var textMd5 = _pdfMetadataProvider.GetDocumentTextMd5(extractedData);
 
@@ -142,7 +147,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
                         FileName = file.FileName ?? file.Name,
                         TextMd5 = textMd5,
                     },
-                    PDFEmbeddedMetadata = embeddedMetaData,
+                    // PDFEmbeddedMetadata = embeddedMetaData,
                     PagesAsPNGs = convertedImages
                 };
             }

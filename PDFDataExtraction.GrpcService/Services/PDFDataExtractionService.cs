@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Google.Protobuf.Collections;
 using Grpc.Core;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Generic;

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace PDFDataExtraction.Generic.Models
@@ -6,18 +7,21 @@ namespace PDFDataExtraction.Generic.Models
     /// <summary>
     ///     A rectangular box
     /// </summary>
+    [DataContract]
     public class BoundingBox
     {
         /// <summary>
         ///     The top left corner of the box
         /// </summary>
         [JsonProperty("topLeft")]
+        [DataMember(Order = 1)]
         public Point TopLeftCorner { get; set; }
 
         /// <summary>
         ///     The bottom right corner of the box
         /// </summary>
         [JsonProperty("bottomRight")]
+        [DataMember(Order = 2)]
         public Point BottomRightCorner { get; set; }
         
         [JsonIgnore]
