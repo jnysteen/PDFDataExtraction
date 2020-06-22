@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Net;
@@ -63,7 +64,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
 
             try
             {
-                var extractionResult = await ProcessFile(file, conf, extractionParameters.ConvertPdfToImages ?? false);
+                var extractionResult = await ProcessFile(file, conf, extractionParameters.ConvertPdfToImages ?? false, extractionParameters.OcrIfNeeded);
                 await WriteJsonResponse(extractionResult, HttpStatusCode.OK);
             }
             catch (Exception e)
@@ -91,7 +92,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             
             try
             {
-                var extractionResult = await ProcessFile(file, conf, false);
+                var extractionResult = await ProcessFile(file, conf, false, extractionParameters.OcrIfNeeded);
                 var documentAsString = extractionResult.ExtractedData?.GetAsString();
                 return documentAsString;
             }
@@ -111,7 +112,7 @@ namespace PDFDataExtraction.WebAPI.Controllers
             conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
         }
         
-        private async Task<PDFTextExtractionResult> ProcessFile(IFormFile file, DocElementConstructionConfiguration config, bool convertPdfToPngs)
+        private async Task<PDFTextExtractionResult> ProcessFile(IFormFile file, DocElementConstructionConfiguration config, bool convertPdfToPngs, bool performOcr)
         {                
             var fileId = Guid.NewGuid().ToString();
             var inputFilesDir = Path.Combine(Directory.GetCurrentDirectory(), $"uploaded-files/");
@@ -127,7 +128,8 @@ namespace PDFDataExtraction.WebAPI.Controllers
                 await using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
                     await file.CopyToAsync(fileStream);
 
-                await _iocrpdfWrapper.OCRPDF(inputFilePath, inputFilePath, null);
+                if(performOcr)
+                    await _iocrpdfWrapper.OCRPDF(inputFilePath, inputFilePath, null);
                 
                 PageAsImage[] convertedImages = null;
                 if(convertPdfToPngs)
@@ -209,6 +211,23 @@ namespace PDFDataExtraction.WebAPI.Controllers
             /// </summary>
             [FromQuery(Name = "whiteSpaceFactor")]
             public double WhiteSpaceSizeAsAFactorOfMedianCharacterWidth { get; set; } = 0.2;
+
+            /// <summary>
+            ///     Set this to `true` if OCR should be performed on the input PDF, if no text is embedded in the PDF.
+            /// </summary>
+            [FromQuery(Name = "ocrIfNeeded")]
+            public bool OcrIfNeeded { get; set; } = false;
+            
+            /// <summary>
+            ///     Codes for languages to be used when performing OCR. If none are provided, English is used.
+            ///     Providing language codes increases the chances of reading correctly for those languages.
+            /// 
+            ///     Possible languages code can be found here: https://github.com/tesseract-ocr/tessdata
+            ///     The available codes depend on what is installed on the host of this application - you may
+            ///     have to manually install the languages to make them available.
+            /// </summary>
+            [FromQuery(Name = "ocrLanguages")]
+            public List<string> OcrLanguages { get; set; }
         }
     }
 }
