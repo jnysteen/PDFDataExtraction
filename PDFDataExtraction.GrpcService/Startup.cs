@@ -28,6 +28,7 @@ namespace PDFDataExtraction.GrpcService
             services.AddGrpc();
             services.AddSingleton<IFileTypeIdentifier>(_ => CreateFileTypeIdentifier());
             services.AddScoped<IPDFTextExtractor, PDF2TxtWrapper>();
+            services.AddSingleton<IPDFMetadataProvider, PDFMetadataProvider>();
             services.AddScoped<IPDFToImagesConverter, GhostScriptWrapper>();
         }
 

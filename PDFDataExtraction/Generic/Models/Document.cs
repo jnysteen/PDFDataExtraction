@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PDFDataExtraction.Generic.Models
@@ -8,6 +9,11 @@ namespace PDFDataExtraction.Generic.Models
         ///     The pages of the document
         /// </summary>
         public Page[] Pages { get; set; }
+        
+        /// <summary>
+        ///     The fonts found in the document along with the IDs of the characters rendered with the specific font.
+        /// </summary>
+        public CharacterFontGroup[] Fonts { get; set; }
 
         public string GetAsString()
         {

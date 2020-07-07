@@ -24,6 +24,9 @@ namespace PDFDataExtraction.PDF2Txt
 
             Func<IEnumerable<Character>, Word> wordCreator = GetWordFromCharacters;
 
+            
+            var allCharsWithFonts = new List<(Character character, string font)>();
+            
             var nextLineNumber = 1;
             var nextWordNumber = 1;
             var nextCharNumber = 1;
@@ -47,8 +50,13 @@ namespace PDFDataExtraction.PDF2Txt
                     foreach (var textLine in textBox.Textlines)
                     {
                         var nonEmptyTextParts = textLine.TextParts.Where(t => !string.IsNullOrEmpty(t.Text));
-                        var textPartsAsCharacters =
+                        var textPartsAsCharactersAndFonts =
                             nonEmptyTextParts.Select(t => GetCharacterFromTextNode(t, outputPage));
+                    
+                        textPartsAsCharactersAndFonts = textPartsAsCharactersAndFonts.OrderBy(w => w.character.BoundingBox.MaxY).ThenBy(w => w.character.BoundingBox.MinX).ToList();
+                        allCharsWithFonts.AddRange(textPartsAsCharactersAndFonts);
+
+                        var textPartsAsCharacters = textPartsAsCharactersAndFonts.Select(t => t.character); 
 
                         var wordsInLine = Grouper.GroupByCondition(textPartsAsCharacters,
                             (thisCharacter, theCharacterAfterThisCharacter) =>
@@ -62,11 +70,14 @@ namespace PDFDataExtraction.PDF2Txt
                 foreach (var figure in page.Figure)
                 {
                     var nonEmptyTextParts = figure.TextParts.Where(t => !string.IsNullOrEmpty(t.Text));
-                    var textPartsAsCharacters =
+                    var textPartsAsCharactersAndFonts =
                         nonEmptyTextParts.Select(t => GetCharacterFromTextNode(t, outputPage));
                     
-                    textPartsAsCharacters = textPartsAsCharacters.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
+                    textPartsAsCharactersAndFonts = textPartsAsCharactersAndFonts.OrderBy(w => w.character.BoundingBox.MaxY).ThenBy(w => w.character.BoundingBox.MinX).ToList();
+                    allCharsWithFonts.AddRange(textPartsAsCharactersAndFonts);
 
+                    var textPartsAsCharacters = textPartsAsCharactersAndFonts.Select(t => t.character); 
+                    
                     var wordsInLine = Grouper.GroupByCondition(textPartsAsCharacters,
                         (thisCharacter, theCharacterAfterThisCharacter) =>
                             CharactersToWordGroupingCondition(thisCharacter, theCharacterAfterThisCharacter,
@@ -77,6 +88,7 @@ namespace PDFDataExtraction.PDF2Txt
 
                 var wordsInReadingOrder = allWordsOnPage.OrderBy(w => w.BoundingBox.MaxY).ThenBy(w => w.BoundingBox.MinX);
                 var createdLines = ConstructLinesFromWords(wordsInReadingOrder, docElementConstructionConfiguration, ref nextLineNumber);
+                
 
                 foreach (var createdLine in createdLines)
                 {
@@ -93,14 +105,21 @@ namespace PDFDataExtraction.PDF2Txt
                         }
                     }
                 }
-                
                 outputPage.Lines = createdLines;
                 outputPages.Add(outputPage);
             }
 
+            var fontGroups = allCharsWithFonts.GroupBy(c => c.font, c => c.character.Id).Select(g =>
+                new CharacterFontGroup()
+                {
+                    Name = g.Key,
+                    CharacterIds = g.ToList()
+                }).ToArray();
+
             return new Document()
             {
-                Pages = outputPages.ToArray()
+                Pages = outputPages.ToArray(),
+                Fonts = fontGroups
             };
         }
         
@@ -178,14 +197,13 @@ namespace PDFDataExtraction.PDF2Txt
             };
         }
 
-        private static Character GetCharacterFromTextNode(TextNode textNode, Page originatesFromPage)
+        private static (Character character, string font) GetCharacterFromTextNode(TextNode textNode, Page originatesFromPage)
         {
-            return new Character()
+            return (new Character()
             {
-                Font = textNode.Font,
                 Text = textNode.Text,
                 BoundingBox = GetBoundingBoxFromString(textNode.Bbox, originatesFromPage.Height)
-            };
+            }, textNode.Font);
         }
 
         private static Word GetWordFromCharacters(IEnumerable<Character> characters)

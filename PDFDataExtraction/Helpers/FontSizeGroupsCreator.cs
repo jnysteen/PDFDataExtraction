@@ -6,7 +6,7 @@ using PDFDataExtraction.Generic.Models;
 
 namespace PDFDataExtraction.Helpers
 {
-    public static class FontSizeGroupsCreator
+    internal static class FontSizeGroupsCreator
     {
         public static IEnumerable<CharactersFontSizeGroup> FindFontSizeGroups(IEnumerable<Character> charactersToGroup)
         {

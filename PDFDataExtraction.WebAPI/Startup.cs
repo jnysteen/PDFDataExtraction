@@ -58,11 +58,7 @@ namespace PDFDataExtraction.WebAPI
             });
 
             services.AddSingleton<IFileTypeIdentifier>(_ => CreateFileTypeIdentifier());
-            services.AddSingleton<IPDFMetadataProvider, PDFMetadataProvider>(services =>
-            {
-                var scriptsFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Scripts/");
-                return new PDFMetadataProvider(scriptsFolder);
-            });
+            services.AddSingleton<IPDFMetadataProvider, PDFMetadataProvider>();
 
             services.AddScoped<IPDFTextExtractor, PDF2TxtWrapper>();
             services.AddScoped<IPDFToImagesConverter, GhostScriptWrapper>();

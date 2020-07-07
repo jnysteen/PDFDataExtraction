@@ -10,6 +10,13 @@ message PDFDataExtractionRequest {
   bytes fileContents = 1;
   string fileName = 2;
   string fileExtension = 3;
+  ExtractionParameters extractionParameters = 4;
+  bool convertPdfToImages = 5;
+}
+
+message ExtractionParameters {
+  double wordLineDiff = 1;
+  double whiteSpaceFactor = 2;
 }
 
 message PDFDataExtractionResultSimple {
@@ -18,10 +25,26 @@ message PDFDataExtractionResultSimple {
 
 message PDFDataExtractionResultDetailed {
   Document extractedDocument = 1;
+  string fileMd5 = 3;
+  string inputTextMd5 = 4;
+  repeated PageAsImage pagesAsPNGs = 5;
+}
+
+message CharacterFont {
+  string name = 1;
+  repeated string characterIds = 2;
+}
+
+message PageAsImage {
+    bytes contents = 1;
+    int32 pageNumber = 2;
+    int32 imageHeight = 3;
+    int32 imageWidth = 4;
 }
 
 message Document {
   repeated Page pages = 1;
+  repeated CharacterFont characterFonts = 2;
 
   message Page {
     string id = 1;
@@ -49,9 +72,8 @@ message Document {
           string id = 1;
           BoundingBox boundingBox = 2;
           string text = 3;
-          string font = 4;
-          string wordId = 5;
-          int32 charNumberInDocument = 6;
+          string wordId = 4;
+          int32 charNumberInDocument = 5;
         }
       }      
     }
@@ -67,4 +89,3 @@ message Document {
     }
   }
 }
-

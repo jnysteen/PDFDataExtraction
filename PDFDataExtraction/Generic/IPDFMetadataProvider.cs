@@ -8,6 +8,5 @@ namespace PDFDataExtraction.Generic
     {
         string GetFileMd5(string filePath);
         string GetDocumentTextMd5(Document document);
-        Task<PDFEmbeddedMetadata> GetPDFMetadata(string inputFilePath);
     }
 }

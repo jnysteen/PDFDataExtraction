@@ -14,11 +14,8 @@ namespace PDFDataExtraction.Generic
 {
     public class PDFMetadataProvider : IPDFMetadataProvider
     {
-        private readonly string _scriptsFolderPath;
-
-        public PDFMetadataProvider(string scriptsFolderPath)
+        public PDFMetadataProvider()
         {
-            _scriptsFolderPath = scriptsFolderPath;
         }
         
         public string GetFileMd5(string filePath)
@@ -37,23 +34,6 @@ namespace PDFDataExtraction.Generic
             var hash = md5Hasher.ComputeHash(documentTextAsBytes);
             var base64String = ByteArrayToHex(hash);
             return base64String;
-        }
-
-        public async Task<PDFEmbeddedMetadata> GetPDFMetadata(string inputFilePath)
-        {
-            var applicationName = "python3";
-            var scriptPath = Path.Combine(_scriptsFolderPath, "extract-pdf-metadata.py");
-            var args = $"{scriptPath} {inputFilePath}";
-            
-            var (statusCode, stdOutput) = await CmdLineHelper.Run(applicationName, args);
-
-            if (statusCode != 0)
-                throw new PDFTextExtractionException($"{applicationName} exited with status code: {statusCode}");
-            
-            using var reader = new StringReader(stdOutput);
-            var outputDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.ReadToEnd());
-            
-            return PDFEmbeddedMetadata.CreateFromMetadataScriptOutput(outputDictionary);
         }
         
         private static string ByteArrayToHex(byte[] bytes)

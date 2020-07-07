@@ -23,12 +23,6 @@ namespace PDFDataExtraction.Generic.Models
         public string Text { get; set; }
 
         /// <summary>
-        ///     The font used to render the character
-        /// </summary>
-        [JsonProperty("font")] 
-        public string Font { get; set; }
-
-        /// <summary>
         ///     The ID of the word that this character is in
         /// </summary>
         [JsonProperty("wordId")]
