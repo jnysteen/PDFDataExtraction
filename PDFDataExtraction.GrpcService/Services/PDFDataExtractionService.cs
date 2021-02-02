@@ -1,85 +1,82 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Google.Protobuf;
-using Google.Protobuf.Collections;
 using Grpc.Core;
-using PDFDataExtraction.Configuration;
-using PDFDataExtraction.Generic;
+using Microsoft.Extensions.Logging;
+using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic.Models;
+using PdfDataExtraction.Grpc;
+using Document = PdfDataExtraction.Grpc.Document;
 
 namespace PDFDataExtraction.GrpcService.Services
 {
-    public class PDFDataExtractionService : Pdfdataextraction.PdfdataextractionBase
+    public class PDFDataExtractionGrpcService : PdfDataExtractionGrpcService.PdfDataExtractionGrpcServiceBase
     {
-        private readonly IPDFTextExtractor _pdfTextExtractor;
-        private readonly IPDFToImagesConverter _pdfToImagesConverter;
-        private readonly IPDFMetadataProvider _pdfMetadataProvider;
+        private readonly IPDFDataExtractionService _pdfDataExtractionService;
+        private readonly ILogger<PDFDataExtractionGrpcService> _logger;
 
-        public PDFDataExtractionService(IPDFTextExtractor pdfTextExtractor, IPDFToImagesConverter pdfToImagesConverter, IPDFMetadataProvider pdfMetadataProvider)
+        public PDFDataExtractionGrpcService(IPDFDataExtractionService pdfDataExtractionService, ILogger<PDFDataExtractionGrpcService> logger)
         {
-            _pdfTextExtractor = pdfTextExtractor;
-            _pdfToImagesConverter = pdfToImagesConverter;
-            _pdfMetadataProvider = pdfMetadataProvider;
+            _pdfDataExtractionService = pdfDataExtractionService;
+            _logger = logger;
         }
-        
-        public override async Task<PDFDataExtractionResultSimple> ExtractSimple(PDFDataExtractionRequest request, ServerCallContext context)
+
+        public override async Task<PDFDataExtractionResultSimple> ExtractSimple(PDFDataExtractionGrpcRequest request, ServerCallContext context)
         {
-            var (extractedData, _, _, _) = await ProcessFile(request);
-            var documentAsString = extractedData?.GetAsString();
-            
+            var mappedRequest = MapRequest(request);
+            var result = await _pdfDataExtractionService.ExtractPDFData(mappedRequest);
+            var documentAsString = result?.ExtractedData?.GetAsString();
+
             return new PDFDataExtractionResultSimple()
             {
                 ExtractedText = documentAsString
             };
         }
 
-        private async Task<(Generic.Models.Document extractedData, PdfImageConversion.PageAsImage[] pngs, string fileMd5, string textMd5)> ProcessFile(PDFDataExtractionRequest request)
+
+        public override async Task<PDFDataExtractionResultDetailed> ExtractDetailed(PDFDataExtractionGrpcRequest request, ServerCallContext context)
         {
-            var fileId = Guid.NewGuid().ToString();
-            var inputFilesDir = Path.Combine(Directory.GetCurrentDirectory(), $"uploaded-files/");
-
-            if (!Directory.Exists(inputFilesDir))
-                Directory.CreateDirectory(inputFilesDir);
-
-            var inputFilePath = Path.Combine(inputFilesDir, $"{fileId}.pdf");
-            await File.WriteAllBytesAsync(inputFilePath, request.FileContents.ToByteArray());
-
-            var config = new DocElementConstructionConfiguration()
+            try
             {
-                MaxDifferenceInWordsInTheSameLine = request.ExtractionParameters.WordLineDiff,
-                WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = request.ExtractionParameters.WhiteSpaceFactor,
-            };
-            
-            PdfImageConversion.PageAsImage[] pngs = null;
-            if(request.ConvertPdfToImages)
-                pngs = await _pdfToImagesConverter.ConvertPDFToPNGs(inputFilePath);
+                var mappedRequest = MapRequest(request);
+                var result = await _pdfDataExtractionService.ExtractPDFData(mappedRequest);
 
-            var extractedData = await _pdfTextExtractor.ExtractTextFromPDF(inputFilePath, config, pngs);
-            
-            var fileMd5 = _pdfMetadataProvider.GetFileMd5(inputFilePath);
-            var textMd5 = _pdfMetadataProvider.GetDocumentTextMd5(extractedData);
-            
-            return (extractedData, pngs, fileMd5, textMd5);
+                var extractedDoc = MapExtractedDoc(result.ExtractedData);
+
+                var pdfDataExtractionResultDetailed = new PDFDataExtractionResultDetailed()
+                {
+                    ExtractedDocument = extractedDoc,
+                    FileMd5 = result.FileMd5,
+                    InputTextMd5 = result.TextMd5,
+                };
+
+                return pdfDataExtractionResultDetailed;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Exception occurred while extracting data from PDF", e);
+                throw;
+            }
         }
 
-        public override async Task<PDFDataExtractionResultDetailed> ExtractDetailed(PDFDataExtractionRequest request, ServerCallContext context)
+        public static Document MapExtractedDoc(Generic.Models.Document extractedData)
         {
-            var (extractedData, pngs, fileMd5, textMd5) = await ProcessFile(request);
-
+            if (extractedData?.Pages?.Any() != true) 
+                return null;
+            
+            Document extractedDoc = null;
+            
             var characterFontGroups = extractedData.Fonts.Select(f => new CharacterFont()
             {
                 Name = f.Name,
                 CharacterIds = {f.CharacterIds}
             });
-            var extractedDoc = new Document()
+            extractedDoc = new Document()
             {
-                CharacterFonts = { characterFontGroups }
+                CharacterFonts = {characterFontGroups}
             };
-            
+
             extractedDoc.Pages.AddRange(extractedData.Pages.Select(p =>
             {
                 var lines = p.Lines.Select(l =>
@@ -95,7 +92,7 @@ namespace PDFDataExtraction.GrpcService.Services
                                 WordId = c.WordId,
                                 CharNumberInDocument = c.CharNumberInDocument
                             });
-                        
+
                         var newWord = new Document.Types.Page.Types.Line.Types.Word
                         {
                             Id = w.Id,
@@ -107,48 +104,45 @@ namespace PDFDataExtraction.GrpcService.Services
                         };
                         return newWord;
                     });
-                    
+
                     var newLine = new Document.Types.Page.Types.Line()
                     {
                         Id = l.Id,
                         PageId = l.PageId,
                         LineNumberInDocument = l.LineNumberInDocument,
                         LineNumberInPage = l.LineNumberInDocument,
-                        Words = { words}
+                        Words = {words}
                     };
                     return newLine;
                 });
-                
+
                 var page = new Document.Types.Page()
                 {
                     Id = p.Id,
-                    Lines = { lines }
+                    Lines = {lines},
+                    Height = p.Height,
+                    Width = p.Width,
+                    PageNumber = p.PageNumber
                 };
                 return page;
             }));
 
-            var mappedPngs = pngs?.Select(png => new PageAsImage
-            {
-                Contents = ByteString.CopyFrom(png.Contents),
-                PageNumber = png.PageNumber,
-                ImageHeight = png.ImageHeight,
-                ImageWidth = png.ImageWidth
-            });
-            
-            var pdfDataExtractionResultDetailed = new PDFDataExtractionResultDetailed()
-            {
-                ExtractedDocument = extractedDoc,
-                FileMd5 = fileMd5,
-                InputTextMd5 = textMd5
-            };
-            
-            if(mappedPngs != null)
-                pdfDataExtractionResultDetailed.PagesAsPNGs.AddRange(mappedPngs);
-
-            return pdfDataExtractionResultDetailed;
+            return extractedDoc;
         }
 
-        public static Document.Types.BoundingBox MapBoundingBox(BoundingBox boundingBox)
+        private static PDFDataExtractionRequest MapRequest(PDFDataExtractionGrpcRequest request)
+        {
+            return new PDFDataExtractionRequest
+            {
+                FileContents = request.ToByteArray(),
+                MaxDifferenceInWordsInTheSameLine = request.ExtractionParameters.WordLineDiff,
+                WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = request.ExtractionParameters.WhiteSpaceFactor,
+                MaxProcessingTimeInMilliseconds = request.MaxProcessingTimeInMilliseconds,
+                ProduceImagesOfPages = request.ConvertPdfToImages
+            };
+        }
+
+        private static Document.Types.BoundingBox MapBoundingBox(BoundingBox boundingBox)
         {
             return new Document.Types.BoundingBox()
             {

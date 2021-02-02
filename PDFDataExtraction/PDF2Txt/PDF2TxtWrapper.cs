@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using PDFDataExtraction.Configuration;
@@ -21,10 +23,9 @@ namespace PDFDataExtraction.PDF2Txt
             _xmlSerializer = new XmlSerializer(typeof(Pages));
         }
         
-        public async Task<Document> ExtractTextFromPDF(string inputFilePath,
-            DocElementConstructionConfiguration docElementConstructionConfiguration, PageAsImage[] pagesAsImages)
+        public async Task<Document> ExtractTextFromPDF(string inputFilePath, DocElementConstructionConfiguration docElementConstructionConfiguration, PageAsImage[] pagesAsImages, CancellationToken cancellationToken)
         {
-            var extractedXml = await ExtractText(inputFilePath);
+            var extractedXml = await ExtractText(inputFilePath, cancellationToken);
             var mapped = PDF2TxtMapper.MapToDocument(extractedXml, docElementConstructionConfiguration);
             
             // If there are page images, we have to ensure that the bounding boxes of the document elements correspond to the size of the page they are on
@@ -34,18 +35,21 @@ namespace PDFDataExtraction.PDF2Txt
             return mapped;
         }
 
-        private async Task<Pages> ExtractText(string inputFilePath)
+        private async Task<Pages> ExtractText(string inputFilePath, CancellationToken cancellationToken)
         {
             var applicationName = "pdf2txt.py";
             var args = $"-t xml -c UTF-8 {inputFilePath}";
 
-            var (statusCode, stdOutput) = await CmdLineHelper.Run(applicationName, args);
+            var (statusCode, stdOutput, errorOutput) = await CmdLineHelper.Run(applicationName, args, cancellationToken);
 
             if (statusCode != 0)
-                throw new PDFTextExtractionException($"{applicationName} exited with status code: {statusCode}");
-            
+            {
+                var lastLineOfErrorOutput = errorOutput?.Split("\n").LastOrDefault(line => !string.IsNullOrWhiteSpace(line))?.Trim() ?? "<empty>";
+                throw new PDFDataExtractionException($"{applicationName} exited with status code: {statusCode}. Last line of error output: '{lastLineOfErrorOutput}'");
+            }
+
             if(string.IsNullOrEmpty(stdOutput))
-                throw new PDFTextExtractionException($"{applicationName} completed without outputting anything!");
+                throw new PDFDataExtractionException($"{applicationName} completed without outputting anything!");
 
             // Certain documents contain the character 0x00, which ends up in the XML - and that char is not allowed in XML, breaking the serializer.
             // The lines below removes the invalid char

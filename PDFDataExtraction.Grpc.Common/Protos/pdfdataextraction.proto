@@ -1,17 +1,20 @@
 syntax = "proto3";
 
+package PdfDataExtraction.Grpc;
+
 // This name cannot be properly cased due to the tooling having issues with it -.-
-service Pdfdataextraction {
-  rpc ExtractSimple (PDFDataExtractionRequest) returns (PDFDataExtractionResultSimple);
-  rpc ExtractDetailed (PDFDataExtractionRequest) returns (PDFDataExtractionResultDetailed);
+service PdfDataExtractionGrpcService {
+  rpc ExtractSimple (PDFDataExtractionGrpcRequest) returns (PDFDataExtractionResultSimple);
+  rpc ExtractDetailed (PDFDataExtractionGrpcRequest) returns (PDFDataExtractionResultDetailed);
 }
 
-message PDFDataExtractionRequest {
+message PDFDataExtractionGrpcRequest {
   bytes fileContents = 1;
   string fileName = 2;
   string fileExtension = 3;
   ExtractionParameters extractionParameters = 4;
-  bool convertPdfToImages = 5;
+  int32 maxProcessingTimeInMilliseconds = 5;
+  bool convertPdfToImages = 6;
 }
 
 message ExtractionParameters {

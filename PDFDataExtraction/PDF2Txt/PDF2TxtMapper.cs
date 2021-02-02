@@ -18,13 +18,21 @@ namespace PDFDataExtraction.PDF2Txt
         {
             var outputPages = new List<Page>();
 
-            var allNonEmptyTextParts = pages.Page.SelectMany(p => p.Textbox).SelectMany(tb => tb.Textlines).SelectMany(tl => tl.TextParts).Where(t => !string.IsNullOrEmpty(t.Text)).ToList();
+            var allNonEmptyTextParts = 
+                pages?
+                    .Page?
+                    .SelectMany(p => p.Textbox)?
+                    .SelectMany(tb => tb.Textlines)?
+                    .SelectMany(tl => tl.TextParts)?
+                    .Where(t => !string.IsNullOrEmpty(t.Text))?
+                    .ToList();
+            if (allNonEmptyTextParts == null || !allNonEmptyTextParts.Any())
+                throw new NoDataExtractedException("PDF2Txt could not extract any data from the PDF");
             var characterOfMeanSize = allNonEmptyTextParts.OrderBy(t => t.Size).Skip(allNonEmptyTextParts.Count() / 2).First();
             var whitespaceSize = GetBoundingBoxFromString(characterOfMeanSize.Bbox).Width * docElementConstructionConfiguration.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;            
 
             Func<IEnumerable<Character>, Word> wordCreator = GetWordFromCharacters;
 
-            
             var allCharsWithFonts = new List<(Character character, string font)>();
             
             var nextLineNumber = 1;
@@ -171,7 +179,7 @@ namespace PDFDataExtraction.PDF2Txt
             var splitOnComma = bbox.Split(',');
 
             if (splitOnComma.Length != 4)
-                throw new PDFTextExtractionException(
+                throw new PDFDataExtractionException(
                     $"Too few or too many coordinates for a bounding box encountered!");
 
             var topLeftX = Math.Round(double.Parse(splitOnComma[0]), 2);

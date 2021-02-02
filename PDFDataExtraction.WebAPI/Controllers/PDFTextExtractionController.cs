@@ -23,15 +23,11 @@ namespace PDFDataExtraction.WebAPI.Controllers
     [ApiController]
     public class PDFTextExtractionController : ControllerBase
     {
-        private readonly IPDFTextExtractor _pdfTextExtractor;
-        private readonly IPDFToImagesConverter _pdfToImagesConverter;
-        private readonly IPDFMetadataProvider _pdfMetadataProvider;
+        private readonly IPDFDataExtractionService _pdfDataExtractionService;
 
-        public PDFTextExtractionController(IPDFTextExtractor pdfTextExtractor, IPDFToImagesConverter pdfToImagesConverter, IPDFMetadataProvider pdfMetadataProvider)
+        public PDFTextExtractionController(IPDFDataExtractionService pdfDataExtractionService)
         {
-            _pdfTextExtractor = pdfTextExtractor;
-            _pdfToImagesConverter = pdfToImagesConverter;
-            _pdfMetadataProvider = pdfMetadataProvider;
+            _pdfDataExtractionService = pdfDataExtractionService;
         }
         
         [HttpGet]
@@ -55,12 +51,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [ProducesResponseType(500, Type = typeof(PDFTextExtractionResult))]
         public async Task DetailedExtraction([Required] IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
-            var conf = new DocElementConstructionConfiguration();
-            UseUserProvidedParameters(extractionParameters, conf);
-
             try
             {
-                var extractionResult = await ProcessFile(file, conf, extractionParameters.ConvertPdfToImages ?? false);
+                var extractionResult = await ProcessFile(file, extractionParameters);
                 await WriteJsonResponse(extractionResult, HttpStatusCode.OK);
             }
             catch (Exception e)
@@ -83,12 +76,9 @@ namespace PDFDataExtraction.WebAPI.Controllers
         [Produces("text/plain")]
         public async Task<ActionResult<string>> SimpleExtraction([Required] IFormFile file, [FromQuery] ExtractionParameters extractionParameters)
         {
-            var conf = new DocElementConstructionConfiguration();
-            UseUserProvidedParameters(extractionParameters, conf);
-            
             try
             {
-                var extractionResult = await ProcessFile(file, conf, false);
+                var extractionResult = await ProcessFile(file, extractionParameters);
                 var documentAsString = extractionResult.ExtractedData?.GetAsString();
                 return documentAsString;
             }
@@ -98,66 +88,46 @@ namespace PDFDataExtraction.WebAPI.Controllers
             }
         }
         
-        private static void UseUserProvidedParameters(ExtractionParameters extractionParameters,
-            DocElementConstructionConfiguration conf)
+        private async Task<PDFTextExtractionResult> ProcessFile(IFormFile file, ExtractionParameters extractionParameters)
         {
-            if (extractionParameters == null)
-                return;
+            var mappedRequest = await MapRequest(file, extractionParameters);
             
-            conf.MaxDifferenceInWordsInTheSameLine = extractionParameters.MaxDifferenceInWordsInTheSameLine;
-            conf.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth;
-        }
-        
-        private async Task<PDFTextExtractionResult> ProcessFile(IFormFile file, DocElementConstructionConfiguration config, bool convertPdfToPngs)
-        {                
-            var fileId = Guid.NewGuid().ToString();
-            var inputFilesDir = Path.Combine(Directory.GetCurrentDirectory(), $"uploaded-files/");
+            var result = await _pdfDataExtractionService.ExtractPDFData(mappedRequest);
 
-            if (!Directory.Exists(inputFilesDir))
-                Directory.CreateDirectory(inputFilesDir);
+            return new PDFTextExtractionResult()
+            {
+                ExtractedData = result.ExtractedData,
+                FileMetaData = new PDFFileMetadata()
+                {
+                    FileMd5 = result.FileMd5,
+                    TextMd5 = result.TextMd5,
+                    FileName = file.Name
+                },
+                PagesAsPNGs = result.PagesAsImages
+            };
+        }
+
+        private static async Task<PDFDataExtractionRequest> MapRequest(IFormFile file, ExtractionParameters extractionParameters)
+        {
+            byte[] fileBytes;
+            await using (var ms = new MemoryStream())
+            {
+                await file.CopyToAsync(ms);
+                fileBytes = ms.ToArray();
+            }
             
-            var inputFilePath = Path.Combine(inputFilesDir, $"{fileId}.pdf");
-
-            try
+            var mappedRequest = new PDFDataExtractionRequest
             {
-                // Save file to disk
-                await using (var fileStream = new FileStream(inputFilePath, FileMode.CreateNew, FileAccess.Write))
-                    await file.CopyToAsync(fileStream);
-                
-                PageAsImage[] convertedImages = null;
-                if(convertPdfToPngs)
-                    convertedImages = await _pdfToImagesConverter.ConvertPDFToPNGs(inputFilePath);
+                FileContents = fileBytes,
+                MaxDifferenceInWordsInTheSameLine = extractionParameters.MaxDifferenceInWordsInTheSameLine,
+                WhiteSpaceSizeAsAFactorOfMedianCharacterWidth = extractionParameters.WhiteSpaceSizeAsAFactorOfMedianCharacterWidth,
+                ProduceImagesOfPages = extractionParameters.ConvertPdfToImages ?? false,
+                MaxProcessingTimeInMilliseconds = extractionParameters.MaxProcessingTimeInMilliseconds
+            };
 
-                var extractedData = await _pdfTextExtractor.ExtractTextFromPDF(inputFilePath, config, convertedImages);
-                
-                var fileMd5 = _pdfMetadataProvider.GetFileMd5(inputFilePath);
-                var textMd5 = _pdfMetadataProvider.GetDocumentTextMd5(extractedData);
-
-                return new PDFTextExtractionResult()
-                {
-                    ExtractedData = extractedData,
-                    FileMetaData = new PDFFileMetadata()
-                    {
-                        FileMd5 = fileMd5,
-                        FileName = file.FileName ?? file.Name,
-                        TextMd5 = textMd5,
-                    },
-                    PagesAsPNGs = convertedImages
-                };
-            }
-            finally
-            {
-                try
-                {
-                    System.IO.File.Delete(inputFilePath);
-                }
-                catch (IOException)
-                {
-                    
-                }
-            }
+            return mappedRequest;
         }
-        
+
         /// <summary>
         ///     Using this fixes the concurrency issues of Newtonsoft.Json, where ID assignment can go wrong when the API is under heavy load
         /// </summary>
@@ -185,24 +155,35 @@ namespace PDFDataExtraction.WebAPI.Controllers
         public class ExtractionParameters
         {
             /// <summary>
-            ///     Set this to `true` if the PDF should be converted to PNGs and included in the returned result. Default is `false`
+            ///     Set this to `true` if the PDF should be converted to PNGs and included in the returned result.
+            ///     Default is `false`.
             /// </summary>
             [FromQuery(Name = "convertPdfToImages")]
             public bool? ConvertPdfToImages { get; set; }
             
             /// <summary>
             ///     The allowed difference in Y coordinates for words in the same line as a factor of the average character height.
-            ///     The default value is 0.15
+            ///     The default value is 0.15.
             /// </summary>
             [FromQuery(Name = "wordLineDiff")]
+            [Range(0, double.MaxValue)]
             public double MaxDifferenceInWordsInTheSameLine { get; set; } = 0.15;
                 
             /// <summary>
             ///    How wide the spacing between characters can be before the spacing is considered to be a whitespace, as a factor of the median character width.
-            ///    The default value is 0.2
+            ///    The default value is 0.2.
             /// </summary>
             [FromQuery(Name = "whiteSpaceFactor")]
+            [Range(0, double.MaxValue)]
             public double WhiteSpaceSizeAsAFactorOfMedianCharacterWidth { get; set; } = 0.2;
+            
+            /// <summary>
+            ///     The maximum amount of milliseconds the server will spend on extracting data from the PDF before aborting.
+            ///     The default value is 5000 milliseconds.
+            /// </summary>
+            [FromQuery(Name = "maxProcessingTime")]
+            [Range(0, int.MaxValue)]
+            public int MaxProcessingTimeInMilliseconds { get; set; } = 5000;
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PDFDataExtraction.Exceptions;
@@ -19,7 +20,7 @@ namespace PDFDataExtraction.PdfImageConversion
             _logger = logger;
         }
         
-        public async Task<PageAsImage[]> ConvertPDFToPNGs(string inputFilePath)
+        public async Task<PageAsImage[]> ConvertPDFToPNGs(string inputFilePath, CancellationToken cancellationToken)
         {
             var tempWorkingFolder = CreateTemporaryDirectory();
 
@@ -28,10 +29,10 @@ namespace PDFDataExtraction.PdfImageConversion
                 var applicationName = "gs";
                 var args = $"-dTextAlphaBits=4 -dGraphicsAlphaBits=4 -r300 -sDEVICE=png16m -o {Path.Combine(tempWorkingFolder, "%03d.png")} {inputFilePath}";
 
-                var (statusCode, stdOutput) = await CmdLineHelper.Run(applicationName, args);
+                var (statusCode, stdOutput, errorOutput) = await CmdLineHelper.Run(applicationName, args, cancellationToken);
 
                 if (statusCode != 0)
-                    throw new PDFTextExtractionException($"{applicationName} exited with status code: {statusCode}");
+                    throw new PDFDataExtractionException($"{applicationName} exited with status code: {statusCode}, error output: '{errorOutput}'");
 
                 var extractedImageFiles = Directory.GetFiles(tempWorkingFolder).OrderBy(e => e).ToArray();
 
