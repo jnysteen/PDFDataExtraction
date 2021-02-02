@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include=".\**\TestFiles\*" Exclude=".\**\TestFiles\*.cs">
+        <Content Include="TestFiles\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
