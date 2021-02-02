@@ -9,8 +9,8 @@ The tools have been made easy to integrate with by wrapping them in a simple HTT
 
 
 PDF data extraction tools currently included:
-* PDF2Text
-* pdftotext
+* PDF2Text 
+TODO add link
 
 ## How to use
 
