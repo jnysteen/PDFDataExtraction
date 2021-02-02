@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Microsoft.Extensions.Logging;
 using PDFDataExtraction.Configuration;
 using PDFDataExtraction.Exceptions;
 using PDFDataExtraction.Generic;
@@ -16,10 +17,12 @@ namespace PDFDataExtraction.PDF2Txt
 {
     public class PDF2TxtWrapper : IPDFTextExtractor
     {
+        private readonly ILogger<PDF2TxtWrapper> _logger;
         private readonly XmlSerializer _xmlSerializer;
 
-        public PDF2TxtWrapper()
+        public PDF2TxtWrapper(ILogger<PDF2TxtWrapper> logger)
         {
+            _logger = logger;
             _xmlSerializer = new XmlSerializer(typeof(Pages));
         }
         
@@ -55,7 +58,11 @@ namespace PDFDataExtraction.PDF2Txt
             // The lines below removes the invalid char
             var invalidChar = ((char) 0x00).ToString();
             stdOutput = stdOutput.Replace(invalidChar, "");
-
+            
+            #if DEBUG
+            _logger.LogTrace($"pdf2txt.py stdoutput: {stdOutput}");
+            #endif
+            
             using var reader = new StringReader(stdOutput);
             var deserializedDoc = (Pages) _xmlSerializer.Deserialize(reader);
             return deserializedDoc;

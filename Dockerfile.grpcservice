@@ -1,6 +1,6 @@
 # Could probably build a much smaller image by following this: https://coderbook.com/@marcus/how-to-optimize-docker-images-for-smaller-size-and-speed/
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0.102-1-buster-slim AS build
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
@@ -17,7 +17,7 @@ COPY PDFDataExtraction/. ./PDFDataExtraction/
 WORKDIR /app/PDFDataExtraction.GrpcService
 RUN dotnet publish -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:5.0.2-buster-slim AS runtime
 
 # install System.Drawing native dependencies
 RUN apt-get update \

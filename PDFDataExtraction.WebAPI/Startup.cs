@@ -1,6 +1,4 @@
-using System.IO;
 using System.IO.Compression;
-using System.Reflection;
 using JNysteen.FileTypeIdentifier;
 using JNysteen.FileTypeIdentifier.Interfaces;
 using JNysteen.FileTypeIdentifier.MagicNumbers;
@@ -21,14 +19,14 @@ namespace PDFDataExtraction.WebAPI
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Env { get; }
+        
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
             Env = env;
         }
-
-        public IConfiguration Configuration { get; }
-        public IWebHostEnvironment Env { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -62,6 +60,7 @@ namespace PDFDataExtraction.WebAPI
 
             services.AddScoped<IPDFTextExtractor, PDF2TxtWrapper>();
             services.AddScoped<IPDFToImagesConverter, GhostScriptWrapper>();
+            services.AddScoped<IPDFDataExtractionService, PDFDataExtractionService>();
 
             services.AddScoped<ValidateInputPDFAttribute, ValidateInputPDFAttribute>();
         }
