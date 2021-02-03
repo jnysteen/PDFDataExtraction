@@ -57,7 +57,8 @@ namespace PDFDataExtraction.GrpcService.ConsoleApp
                                 WhiteSpaceFactor = 0.2,
                                 WordLineDiff = 0.15
                             },
-                            MaxProcessingTimeInMilliseconds = 5000
+                            MaxProcessingTimeInMilliseconds = 5000,
+                            ConvertPdfToImages = false
                         };
                     
                         var stopwatch = new Stopwatch();

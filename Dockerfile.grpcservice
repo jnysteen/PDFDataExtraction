@@ -15,7 +15,9 @@ COPY PDFDataExtraction.GrpcService/. ./PDFDataExtraction.GrpcService/
 COPY PDFDataExtraction.Grpc.Common/. ./PDFDataExtraction.Grpc.Common/
 COPY PDFDataExtraction/. ./PDFDataExtraction/
 WORKDIR /app/PDFDataExtraction.GrpcService
-RUN dotnet publish -c Release -o out
+
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish -c $BUILD_CONFIGURATION -o out
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0.2-buster-slim AS runtime
 

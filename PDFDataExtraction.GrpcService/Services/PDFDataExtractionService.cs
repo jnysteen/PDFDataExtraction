@@ -60,7 +60,7 @@ namespace PDFDataExtraction.GrpcService.Services
             }
         }
 
-        public static Document MapExtractedDoc(Generic.Models.Document extractedData)
+        private static Document MapExtractedDoc(Generic.Models.Document extractedData)
         {
             if (extractedData?.Pages?.Any() != true) 
                 return null;

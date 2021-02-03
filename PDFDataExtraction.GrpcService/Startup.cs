@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using JNysteen.FileTypeIdentifier;
+﻿using JNysteen.FileTypeIdentifier;
 using JNysteen.FileTypeIdentifier.Interfaces;
 using JNysteen.FileTypeIdentifier.MagicNumbers;
 using Microsoft.AspNetCore.Builder;
@@ -13,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PDFDataExtraction.Generic;
-using PDFDataExtraction.GrpcService.Services;
 using PDFDataExtraction.PDF2Txt;
 using PDFDataExtraction.PdfImageConversion;
 
@@ -30,6 +23,7 @@ namespace PDFDataExtraction.GrpcService
             services.AddScoped<IPDFTextExtractor, PDF2TxtWrapper>();
             services.AddSingleton<IPDFMetadataProvider, PDFMetadataProvider>();
             services.AddScoped<IPDFToImagesConverter, GhostScriptWrapper>();
+            services.AddScoped<IPDFDataExtractionService, PDFDataExtractionService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,7 +38,7 @@ namespace PDFDataExtraction.GrpcService
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<PDFDataExtractionService>();
+                endpoints.MapGrpcService<Services.PDFDataExtractionGrpcService>();
 
                 endpoints.MapGet("/",
                     async context =>
